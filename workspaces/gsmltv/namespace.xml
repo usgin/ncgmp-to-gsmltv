@@ -1,0 +1,5 @@
+<namespace>
+  <id>gsmltv_namespace</id>
+  <prefix>gsmltv</prefix>
+  <uri>http://geosciml.org/xmlns/geosciml-thematicview/1.0.0</uri>
+</namespace>

@@ -1,0 +1,13 @@
+<dataStore>
+    <id>gsmltv_GeologicUnitView_datastore</id>
+    <name>GeologicUnitView</name>
+    <enabled>true</enabled>
+    <workspace>
+        <id>gsmltv_workspace</id>
+    </workspace>
+    <connectionParameters>
+        <entry key="namespace">http://geosciml.org/xmlns/geosciml-thematicview/1.0.0</entry>
+        <entry key="url">file:workspaces/gsmltv/GeologicUnitView/GeologicUnitView.xml</entry>
+        <entry key="dbtype">app-schema</entry>
+    </connectionParameters>
+</dataStore>
