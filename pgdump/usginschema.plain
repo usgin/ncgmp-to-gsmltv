@@ -1,0 +1,807 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 9.0.2
+-- Dumped by pg_dump version 9.0.1
+-- Started on 2011-05-18 15:31:00 MST
+
+SET statement_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = off;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET escape_string_warning = off;
+
+--
+-- TOC entry 7 (class 2615 OID 20259)
+-- Name: usgin; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+CREATE SCHEMA usgin;
+
+
+ALTER SCHEMA usgin OWNER TO postgres;
+
+SET search_path = usgin, pg_catalog;
+
+--
+-- TOC entry 2495 (class 1259 OID 20260)
+-- Dependencies: 7
+-- Name: controlledconceptlookup_oid; Type: SEQUENCE; Schema: usgin; Owner: postgres
+--
+
+CREATE SEQUENCE controlledconceptlookup_oid
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE usgin.controlledconceptlookup_oid OWNER TO postgres;
+
+--
+-- TOC entry 2885 (class 0 OID 0)
+-- Dependencies: 2495
+-- Name: controlledconceptlookup_oid; Type: SEQUENCE SET; Schema: usgin; Owner: postgres
+--
+
+SELECT pg_catalog.setval('controlledconceptlookup_oid', 967, true);
+
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- TOC entry 2496 (class 1259 OID 20262)
+-- Dependencies: 2867 7
+-- Name: controlledconceptlookup; Type: TABLE; Schema: usgin; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE controlledconceptlookup (
+    objectid integer DEFAULT nextval('controlledconceptlookup_oid'::regclass) NOT NULL,
+    lookupterm character varying(255),
+    cgiurn character varying(255),
+    cgicodespace character varying(255),
+    cginame character varying(255)
+);
+
+
+ALTER TABLE usgin.controlledconceptlookup OWNER TO postgres;
+
+--
+-- TOC entry 2559 (class 1259 OID 62350)
+-- Dependencies: 2653 7
+-- Name: geologicevent; Type: VIEW; Schema: usgin; Owner: postgres
+--
+
+CREATE VIEW geologicevent AS
+    SELECT ncgmp_extendedattributes.ownerid AS geologichistory_dmu_id, CASE ((ncgmp_extendedattributes.property)::text = 'preferredage'::text) WHEN true THEN ncgmp_extendedattributes.ownerid ELSE 'Not a preferred age'::character varying END AS preferredage_dmu_id, ncgmp_geologicevents.geologicevents_id, ncgmp_geologicevents.event, controlledconceptlookup.cgiurn AS eventurn, ncgmp_geologicevents.agedisplay, lookuptwo.cgiurn AS agedisplayurn, ncgmp_geologicevents.ageyoungerterm, lookupthree.cgiurn AS youngerurn, ncgmp_geologicevents.ageolderterm, lookupfour.cgiurn AS olderurn, ncgmp_geologicevents.timescale, ncgmp_geologicevents.ageyoungervalue, ncgmp_geologicevents.ageoldervalue, ncgmp_geologicevents.notes, ncgmp_geologicevents.datasourceid FROM (((((public.ncgmp_extendedattributes JOIN public.ncgmp_geologicevents ON (((ncgmp_extendedattributes.valuelinkid)::text = (ncgmp_geologicevents.geologicevents_id)::text))) LEFT JOIN controlledconceptlookup ON (((ncgmp_geologicevents.event)::text = (controlledconceptlookup.lookupterm)::text))) LEFT JOIN controlledconceptlookup lookuptwo ON (((ncgmp_geologicevents.agedisplay)::text = (lookuptwo.lookupterm)::text))) LEFT JOIN controlledconceptlookup lookupthree ON (((ncgmp_geologicevents.ageyoungerterm)::text = (lookupthree.lookupterm)::text))) LEFT JOIN controlledconceptlookup lookupfour ON (((ncgmp_geologicevents.ageolderterm)::text = (lookupfour.lookupterm)::text))) WHERE (((ncgmp_extendedattributes.ownertable)::text = 'DescriptionOfMapUnits'::text) AND (((ncgmp_extendedattributes.property)::text = 'preferredage'::text) OR ((ncgmp_extendedattributes.property)::text = 'geologicevent'::text)));
+
+
+ALTER TABLE usgin.geologicevent OWNER TO postgres;
+
+--
+-- TOC entry 2561 (class 1259 OID 62370)
+-- Dependencies: 2655 7
+-- Name: cgi_numericagerange; Type: VIEW; Schema: usgin; Owner: postgres
+--
+
+CREATE VIEW cgi_numericagerange AS
+    SELECT geologicevent.geologichistory_dmu_id AS pkey, geologicevent.ageyoungervalue, geologicevent.ageoldervalue, 'urn:ogc:def:nil:OGC:missing'::character varying AS reportingdate FROM geologicevent;
+
+
+ALTER TABLE usgin.cgi_numericagerange OWNER TO postgres;
+
+--
+-- TOC entry 2558 (class 1259 OID 62345)
+-- Dependencies: 2652 7
+-- Name: cgiterms; Type: VIEW; Schema: usgin; Owner: postgres
+--
+
+CREATE VIEW cgiterms AS
+    SELECT 'No Observation'::character varying AS featurelink, 'urn:ogc:def:nil:OGC:missing'::character varying AS value, 'urn:cgi:classifier:CGI:ValueQualifier:200811:nil_missing'::character varying AS qualifier UNION SELECT ncgmp_standardlithology.mapunit AS featurelink, lookupone.cgiurn AS value, lookuptwo.cgiurn AS qualifier FROM ((public.ncgmp_standardlithology LEFT JOIN controlledconceptlookup lookupone ON (((ncgmp_standardlithology.lithology)::text = (lookupone.lookupterm)::text))) LEFT JOIN controlledconceptlookup lookuptwo ON (((ncgmp_standardlithology.proportionterm)::text = (lookuptwo.lookupterm)::text)));
+
+
+ALTER TABLE usgin.cgiterms OWNER TO postgres;
+
+--
+-- TOC entry 2497 (class 1259 OID 20269)
+-- Dependencies: 7
+-- Name: icstimescale_oid; Type: SEQUENCE; Schema: usgin; Owner: postgres
+--
+
+CREATE SEQUENCE icstimescale_oid
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE usgin.icstimescale_oid OWNER TO postgres;
+
+--
+-- TOC entry 2886 (class 0 OID 0)
+-- Dependencies: 2497
+-- Name: icstimescale_oid; Type: SEQUENCE SET; Schema: usgin; Owner: postgres
+--
+
+SELECT pg_catalog.setval('icstimescale_oid', 1, false);
+
+
+--
+-- TOC entry 2498 (class 1259 OID 20271)
+-- Dependencies: 2868 7
+-- Name: icstimescale; Type: TABLE; Schema: usgin; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE icstimescale (
+    objectid integer DEFAULT nextval('icstimescale_oid'::regclass) NOT NULL,
+    name character varying(255),
+    timescale character varying(255),
+    youngeragevalue double precision,
+    youngerageuncertainty double precision,
+    olderagevalue numeric(38,8),
+    olderageuncertainty numeric(38,8),
+    cgiurn character varying(255),
+    codespace character varying(255)
+);
+
+
+ALTER TABLE usgin.icstimescale OWNER TO postgres;
+
+--
+-- TOC entry 2499 (class 1259 OID 20278)
+-- Dependencies: 7
+-- Name: simplelithology200811_oid; Type: SEQUENCE; Schema: usgin; Owner: postgres
+--
+
+CREATE SEQUENCE simplelithology200811_oid
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE usgin.simplelithology200811_oid OWNER TO postgres;
+
+--
+-- TOC entry 2887 (class 0 OID 0)
+-- Dependencies: 2499
+-- Name: simplelithology200811_oid; Type: SEQUENCE SET; Schema: usgin; Owner: postgres
+--
+
+SELECT pg_catalog.setval('simplelithology200811_oid', 1, false);
+
+
+--
+-- TOC entry 2500 (class 1259 OID 20280)
+-- Dependencies: 2869 7
+-- Name: simplelithology200811; Type: TABLE; Schema: usgin; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE simplelithology200811 (
+    objectid integer DEFAULT nextval('simplelithology200811_oid'::regclass) NOT NULL,
+    hkey character varying(255),
+    term character varying(255),
+    synonym character varying(255),
+    definition text,
+    sourcenote character varying(255),
+    discussion text,
+    cgiurn character varying(255),
+    completecgiurn character varying(255),
+    geneticcategory character varying(255),
+    particletype character varying(255),
+    grainsize character varying(255),
+    chemicalcategory character varying(255),
+    petrographiccategory character varying(255),
+    fabrictype character varying(255),
+    shape character varying(255),
+    sorting character varying(255),
+    consolidationdegree character varying(255),
+    qapfigneous character varying(255),
+    tas character varying(255),
+    qfl character varying(255),
+    notes text
+);
+
+
+ALTER TABLE usgin.simplelithology200811 OWNER TO postgres;
+
+--
+-- TOC entry 2560 (class 1259 OID 62355)
+-- Dependencies: 2654 7
+-- Name: standardlith; Type: VIEW; Schema: usgin; Owner: postgres
+--
+
+CREATE VIEW standardlith AS
+    SELECT ncgmp_standardlithology.standardlithology_id, ncgmp_standardlithology.mapunit, ncgmp_standardlithology.parttype, ncgmp_standardlithology.lithology, ncgmp_standardlithology.proportionterm, ncgmp_standardlithology.proportionvalue, ncgmp_standardlithology.scientificconfidence, ncgmp_standardlithology.datasourceid, CASE (controlledconceptlookup.cgiurn IS NULL) WHEN true THEN (('urn:ogc:def:nil:OGC:missing'::character varying)::bpchar)::character varying ELSE controlledconceptlookup.cgiurn END AS cgiurn FROM (controlledconceptlookup RIGHT JOIN public.ncgmp_standardlithology ON (((controlledconceptlookup.lookupterm)::bpchar = (ncgmp_standardlithology.lithology)::bpchar))) UNION SELECT 'No Observation' AS standardlithology_id, NULL::unknown AS mapunit, NULL::unknown AS parttype, NULL::unknown AS lithology, NULL::unknown AS proportionterm, NULL::unknown AS proportionvalue, NULL::unknown AS scientificconfidence, NULL::unknown AS datasourceid, 'urn:ogc:def:nil:OGC:missing' AS cgiurn;
+
+
+ALTER TABLE usgin.standardlith OWNER TO postgres;
+
+--
+-- TOC entry 2501 (class 1259 OID 20287)
+-- Dependencies: 7
+-- Name: termvaluelookup_oid; Type: SEQUENCE; Schema: usgin; Owner: postgres
+--
+
+CREATE SEQUENCE termvaluelookup_oid
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE usgin.termvaluelookup_oid OWNER TO postgres;
+
+--
+-- TOC entry 2888 (class 0 OID 0)
+-- Dependencies: 2501
+-- Name: termvaluelookup_oid; Type: SEQUENCE SET; Schema: usgin; Owner: postgres
+--
+
+SELECT pg_catalog.setval('termvaluelookup_oid', 1, false);
+
+
+--
+-- TOC entry 2502 (class 1259 OID 20289)
+-- Dependencies: 2870 7
+-- Name: termvaluelookup; Type: TABLE; Schema: usgin; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE termvaluelookup (
+    objectid integer DEFAULT nextval('termvaluelookup_oid'::regclass) NOT NULL,
+    lookupterm character varying(255),
+    cgiurn character varying(255),
+    cgicodespace character varying(255),
+    cginame character varying(255)
+);
+
+
+ALTER TABLE usgin.termvaluelookup OWNER TO postgres;
+
+--
+-- TOC entry 2879 (class 0 OID 20262)
+-- Dependencies: 2496
+-- Data for Name: controlledconceptlookup; Type: TABLE DATA; Schema: usgin; Owner: postgres
+--
+
+COPY controlledconceptlookup (objectid, lookupterm, cgiurn, cgicodespace, cginame) FROM stdin;
+32	Lava autobreccia	urn:cgi:classifier:CGI:SimpleLithology:200811:breccia	urn:cgi:classifier:CGI:SimpleLithology:200811	Breccia
+61	Sandy gravel	urn:cgi:classifier:CGI:SimpleLithology:200811:gravel	urn:cgi:classifier:CGI:SimpleLithology:200811	Gravel
+58	Sand (sandy sediment)	urn:cgi:classifier:CGI:SimpleLithology:200811:sand	urn:cgi:classifier:CGI:SimpleLithology:200811	Sand
+46	Peraluminous rock	urn:cgi:classifier:CGI:SimpleLithology:200811:granitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Granitic rock
+48	Porphyritic normal composition igneous rock	urn:cgi:classifier:CGI:SimpleLithology:200811:porphyry	urn:cgi:classifier:CGI:SimpleLithology:200811	Porphyry
+15	Doleritic rock	urn:cgi:classifier:CGI:SimpleLithology:200811:doleritic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Doleritic rock
+17	Fine grained or porphyritic crystalline rock	urn:cgi:classifier:CGI:SimpleLithology:200811:fine_grained_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Fine grained igneous rock
+2	Andesitic rock	urn:cgi:classifier:CGI:SimpleLithology:200811:andesitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Andesitic rock
+56	Rhyolite lava	urn:cgi:classifier:CGI:SimpleLithology:200811:rhyolitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Rhyolitic rock
+37	Metarhyolite	urn:cgi:classifier:CGI:SimpleLithology:200811:rhyolitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Rhyolitic rock
+4	Basaltic lava	urn:cgi:classifier:CGI:SimpleLithology:200811:basaltic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Basaltic rock
+5	Basaltic rock	urn:cgi:classifier:CGI:SimpleLithology:200811:basaltic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Basaltic rock
+31	Intermediate-composition fine-grained rock	urn:cgi:classifier:CGI:SimpleLithology:200811:intermediate_composition_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Intermediate composition igneous rock
+39	Metavolcanic rock	urn:cgi:classifier:CGI:SimpleLithology:200811:metamorphic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Metamorphic rock
+21	Granitic rock (granitoid)	urn:cgi:classifier:CGI:SimpleLithology:200811:granitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Granitic rock
+13	Dacitic lava	urn:cgi:classifier:CGI:SimpleLithology:200811:dacitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Dacitic rock
+23	Gravelly sand	urn:cgi:classifier:CGI:SimpleLithology:200811:gravel	urn:cgi:classifier:CGI:SimpleLithology:200811	Gravel
+1	Andesitic lava	urn:cgi:classifier:CGI:SimpleLithology:200811:andesitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Andesitic rock
+38	Metasedimentary rock	urn:cgi:classifier:CGI:SimpleLithology:200811:metamorphic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Metamorphic rock
+36	Metacarbonate metamorphic rock	urn:cgi:classifier:CGI:SimpleLithology:200811:metamorphic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Metamorphic rock
+24	Greenschist	urn:cgi:classifier:CGI:SimpleLithology:200811:metamorphic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Metamorphic rock
+53	Quartzo feldspathic granofels	urn:cgi:classifier:CGI:SimpleLithology:200811:granofels	urn:cgi:classifier:CGI:SimpleLithology:200811	Granofels
+14	Dacitic rock	urn:cgi:classifier:CGI:SimpleLithology:200811:dacitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Dacitic rock
+35	Marble granofels	urn:cgi:classifier:CGI:SimpleLithology:200811:granofels	urn:cgi:classifier:CGI:SimpleLithology:200811	Granofels
+52	Quartzite granofels	urn:cgi:classifier:CGI:SimpleLithology:200811:granofels	urn:cgi:classifier:CGI:SimpleLithology:200811	Granofels
+7	Calcsilicate foliated metamorphic rock	urn:cgi:classifier:CGI:SimpleLithology:200811:foliated_metamorphic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Foliated metamorphic rock
+62	Schist	urn:cgi:classifier:CGI:SimpleLithology:200811:schist	urn:cgi:classifier:CGI:SimpleLithology:200811	Schist
+51	Quartz feldspar schist	urn:cgi:classifier:CGI:SimpleLithology:200811:schist	urn:cgi:classifier:CGI:SimpleLithology:200811	Schist
+22	Gravel (Gravelly sediment)	urn:cgi:classifier:CGI:SimpleLithology:200811:gravel	urn:cgi:classifier:CGI:SimpleLithology:200811	Gravel
+50	Quartz feldspar pelitic schist	urn:cgi:classifier:CGI:SimpleLithology:200811:schist	urn:cgi:classifier:CGI:SimpleLithology:200811	Schist
+47	Phyllite	urn:cgi:classifier:CGI:SimpleLithology:200811:phyllite	urn:cgi:classifier:CGI:SimpleLithology:200811	Phyllite
+42	Mylonitic rock	urn:cgi:classifier:CGI:SimpleLithology:200811:mylonitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Mylonitic rock
+54	Quartzo feldspathic layered gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811:gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811	Gneiss
+43	Non layered gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811:gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811	Gneiss
+45	Pegmatite	urn:cgi:classifier:CGI:SimpleLithology:200811:pegmatite	urn:cgi:classifier:CGI:SimpleLithology:200811	Pegmatite
+19	Generic gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811:gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811	Gneiss
+3	Augen gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811:gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811	Gneiss
+55	Quartzo feldspathic non layered gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811:gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811	Gneiss
+44	Orthogneiss	urn:cgi:classifier:CGI:SimpleLithology:200811:gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811	Gneiss
+33	Layered gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811:gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811	Gneiss
+57	Rhyolitic rock	urn:cgi:classifier:CGI:SimpleLithology:200811:rhyolitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Rhyolitic rock
+29	Impure marble	urn:cgi:classifier:CGI:SimpleLithology:200811:marble	urn:cgi:classifier:CGI:SimpleLithology:200811	Marble
+41	Mudstone (mudrock of SLTTs)	urn:cgi:classifier:CGI:SimpleLithology:200811:mudstone	urn:cgi:classifier:CGI:SimpleLithology:200811	Mudstone
+64	Shale	urn:cgi:classifier:CGI:SimpleLithology:200811:shale	urn:cgi:classifier:CGI:SimpleLithology:200811	Shale
+60	Sandstone (sensu stricto Folk)	urn:cgi:classifier:CGI:SimpleLithology:200811:sandstone	urn:cgi:classifier:CGI:SimpleLithology:200811	Sandstone
+59	Sandstone (sandy rock of SLTTs)	urn:cgi:classifier:CGI:SimpleLithology:200811:sandstone	urn:cgi:classifier:CGI:SimpleLithology:200811	Sandstone
+12	Conglomeratic sandstone	urn:cgi:classifier:CGI:SimpleLithology:200811:conglomerate	urn:cgi:classifier:CGI:SimpleLithology:200811	Conglomerate
+11	Conglomerate (sensu stricto Folk)	urn:cgi:classifier:CGI:SimpleLithology:200811:conglomerate	urn:cgi:classifier:CGI:SimpleLithology:200811	Conglomerate
+10	Conglomerate (conglomeratic rock of SLTTs)	urn:cgi:classifier:CGI:SimpleLithology:200811:conglomerate	urn:cgi:classifier:CGI:SimpleLithology:200811	Conglomerate
+18	Generic conglomeratic rock (conglomeratic rock of SLTTs)	urn:cgi:classifier:CGI:SimpleLithology:200811:conglomerate	urn:cgi:classifier:CGI:SimpleLithology:200811	Conglomerate
+34	Limestone	urn:cgi:classifier:CGI:SimpleLithology:200811:calcareous_carbonate_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Calcareous carbonate sedimentary rock
+28	Impure limestone	urn:cgi:classifier:CGI:SimpleLithology:200811:calcareous_carbonate_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Calcareous carbonate sedimentary rock
+30	Inorganic fluid	urn:ogc:def:nil:OGC:missing	urn:ietf:rfc:2141	missing
+63	Sedimentary breccia	urn:cgi:classifier:CGI:SimpleLithology:200811:breccia	urn:cgi:classifier:CGI:SimpleLithology:200811	Breccia
+27	Impure dolostone	urn:cgi:classifier:CGI:SimpleLithology:200811:dolomitic_or_magnesian_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Dolomitic or magnesian sedimentary rock
+16	Dolostone	urn:cgi:classifier:CGI:SimpleLithology:200811:dolomitic_or_magnesian_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811	Dolomitic or magnesian sedimentary rock
+9	Coal	urn:cgi:classifier:CGI:SimpleLithology:200811:coal	urn:cgi:classifier:CGI:SimpleLithology:200811	Coal
+67	Welded tuff	urn:cgi:classifier:CGI:SimpleLithology:200811:pyroclastic_material	urn:cgi:classifier:CGI:SimpleLithology:200811	Pyroclastic material
+66	Volcanic lithic sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:pyroclastic_material	urn:cgi:classifier:CGI:SimpleLithology:200811	Pyroclastic material
+49	Pyroclastic breccia	urn:cgi:classifier:CGI:SimpleLithology:200811:pyroclastic_material	urn:cgi:classifier:CGI:SimpleLithology:200811	Pyroclastic material
+20	Generic tuff	urn:cgi:classifier:CGI:SimpleLithology:200811:pyroclastic_material	urn:cgi:classifier:CGI:SimpleLithology:200811	Pyroclastic material
+6	Bentonite	urn:cgi:classifier:CGI:SimpleLithology:200811:pyroclastic_material	urn:cgi:classifier:CGI:SimpleLithology:200811	Pyroclastic material
+65	Volcanic-lithic sedimentary rock (tuffite)	urn:cgi:classifier:CGI:SimpleLithology:200811:pyroclastic_material	urn:cgi:classifier:CGI:SimpleLithology:200811	Pyroclastic material
+8	Clastic sedimentary material	urn:cgi:classifier:CGI:SimpleLithology:200811:clastic_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811	Clastic sedimentary material
+40	Mud (muddy sediment)	urn:cgi:classifier:CGI:SimpleLithology:200811:clastic_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811	Clastic sedimentary material
+25	Gypsum rock	urn:cgi:classifier:CGI:SimpleLithology:200811:evaporite	urn:cgi:classifier:CGI:SimpleLithology:200811	Evaporite
+26	Gypsum sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:evaporite	urn:cgi:classifier:CGI:SimpleLithology:200811	Evaporite
+712	Cambrian	urn:cgi:classifier:ICS:StratChart:2008:Cambrian	urn:cgi:classifier:ICS:StratChart:2008:	\N
+751	Cretaceous	urn:cgi:classifier:ICS:StratChart:2008:Cretaceous	urn:cgi:classifier:ICS:StratChart:2008:	\N
+714	Early Cretaceous	urn:cgi:classifier:ICS:StratChart:2008:LowerCretaceous	\N	\N
+716	Early Jurassic	urn:cgi:classifier:ICS:StratChart:2008:LowerJurassic\n	\N	\N
+718	Jurassic	urn:cgi:classifier:ICS:StratChart:2008:Jurassic	\N	\N
+750	Late Jurassic	urn:cgi:classifier:ICS:StratChart:2008:UpperJurassic	\N	\N
+739	Middle Jurassic	urn:cgi:classifier:ICS:StratChart:2008:MiddleJurassic	\N	\N
+708	Late Cretaceous	urn:cgi:classifier:ICS:StratChart:2008:UpperCretaceous	\N	\N
+753	Early Pleistocene	urn:cgi:classifier:ICS:StratChart:2008:Pleistocene	\N	\N
+706	Early Proterozoic	urn:cgi:classifier:ICS:StratChart:2008:PaleoProterozoic	\N	\N
+756	Middle Proterozoic	urn:cgi:classifier:ICS:StratChart:2008:MesoProterozoic\n	\N	\N
+715	Early Triassic	urn:cgi:classifier:ICS:StratChart:2008:LowerTriassic\n	\N	\N
+728	Middle Pleistocene	urn:cgi:classifier:ICS:StratChart:2008:Pleistocene	\N	\N
+745	Middle Triassic	urn:cgi:classifier:ICS:StratChart:2008:MiddleTriassic	\N	\N
+705	Holocene	urn:cgi:classifier:ICS:StratChart:2008:Holocene	\N	\N
+707	Late Triassic	urn:cgi:classifier:ICS:StratChart:2008:UpperTriassic	\N	Zanclean
+743	Mississippian	urn:cgi:classifier:ICS:StratChart:2008:Mississippian	\N	\N
+729	Oligocene	urn:cgi:classifier:ICS:StratChart:2008:Oligocene	\N	\N
+730	Paleocene	urn:cgi:classifier:ICS:StratChart:2008:Paleocene	\N	\N
+731	Paleozoic	urn:cgi:classifier:ICS:StratChart:2008:Paleozoic	\N	\N
+732	Pennsylvanian	urn:cgi:classifier:ICS:StratChart:2008:Pennsylvanian	\N	\N
+762	Permian	urn:cgi:classifier:ICS:StratChart:2008:Permian	\N	\N
+752	Pliocene	urn:cgi:classifier:ICS:StratChart:2008:Pliocene	\N	\N
+710	Quaternary	urn:cgi:classifier:ICS:StratChart:2008:Quaternary	\N	\N
+722	Late Miocene	urn:cgi:classifier:ICS:StratChart:2008:Miocene	\N	\N
+766	Miocene	urn:cgi:classifier:ICS:StratChart:2008:Miocene\n	\N	\N
+725	Middle Pliocene	urn:cgi:classifier:ICS:StratChart:2008:Pliocene	\N	Piacenzian
+723	Latest Pliocene	urn:cgi:classifier:ICS:StratChart:2008:Pliocene\n	\N	\N
+758	Late Pleistocene	urn:cgi:classifier:ICS:StratChart:2008:Pleistocene\n	\N	\N
+765	Eocene	urn:cgi:classifier:ICS:StratChart:2008:Eocene\n	\N	\N
+724	Middle Miocene	urn:cgi:classifier:ICS:StratChart:2008:Miocene	\N	\N
+654	Deposition	urn:cgi:classifier:CGI:EventProcess:201001:deposition	urn:cgi:classifier:CGI:EventProcess:201001	deposition
+663	Intrusion	urn:cgi:classifier:CGI:EventProcess:201001:intrusion	urn:cgi:classifier:CGI:EventProcess:201001	intrusion
+657	Not assigned	urn:ogc:def:nil:OGC:missing	urn:ietf:rfc:2141\n	not assigned
+704	Deposition and metamorphism	urn:cgi:classifier:CGI:EventProcess:201001:metamorphic_process	urn:cgi:classifier:CGI:EventProcess:201001	metamorphic process
+669	Deposition and metamorphism	urn:cgi:classifier:CGI:EventProcess:201001:deposition\nurn:cgi:classifier:CGI:EventProcess:201001:deposition\n	urn:cgi:classifier:CGI:EventProcess:201001	deposition
+767	Minor	urn:cgi:classifier:CGI:ProportionTerm:201001:minor	\N	\N
+768	Subordinate	urn:cgi:classifier:CGI:ProportionTerm:201001:subordinate\n	\N	\N
+769	Present	urn:cgi:classifier:CGI:ProportionTerm:201001:present	\N	\N
+772	Not specified	urn:ogc:def:nil:OGC:missing	\N	\N
+967	Dominant	urn:cgi:classifier:CGI:ProportionTerm:201001:dominant	\N	\N
+\.
+
+
+--
+-- TOC entry 2880 (class 0 OID 20271)
+-- Dependencies: 2498
+-- Data for Name: icstimescale; Type: TABLE DATA; Schema: usgin; Owner: postgres
+--
+
+COPY icstimescale (objectid, name, timescale, youngeragevalue, youngerageuncertainty, olderagevalue, olderageuncertainty, cgiurn, codespace) FROM stdin;
+1	UpperPleistocene	International stratigraphic chart IUGS2008	0.119999999999999996	0	0.12000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:UpperPleistocene	urn:cgi:classifierScheme:ICS:StratChart:2008
+2	Ionian	International stratigraphic chart IUGS2008	0.780000000000000027	0	0.78000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Ionian	urn:cgi:classifierScheme:ICS:StratChart:2008
+3	Calabrian	International stratigraphic chart IUGS2008	1.80000000000000004	0	1.80000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Calabrian	urn:cgi:classifierScheme:ICS:StratChart:2008
+4	Pleistocene	International stratigraphic chart IUGS2008	2.58000000000000007	0	2.58000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Pleistocene	urn:cgi:classifierScheme:ICS:StratChart:2008
+5	Gelasian	International stratigraphic chart IUGS2008	2.58000000000000007	0	2.58000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Gelasian	urn:cgi:classifierScheme:ICS:StratChart:2008
+6	Piacenzian	International stratigraphic chart IUGS2008	3.60000000000000009	0	3.60000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Piacenzian	urn:cgi:classifierScheme:ICS:StratChart:2008
+7	Zanclean	International stratigraphic chart IUGS2008	5.33000000000000007	0	5.33000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Zanclean	urn:cgi:classifierScheme:ICS:StratChart:2008
+8	Pliocene	International stratigraphic chart IUGS2008	5.33000000000000007	0	5.33000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Pliocene	urn:cgi:classifierScheme:ICS:StratChart:2008
+9	Messinian	International stratigraphic chart IUGS2008	7.24000000000000021	0	7.24000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Messinian	urn:cgi:classifierScheme:ICS:StratChart:2008
+10	Tortonian	International stratigraphic chart IUGS2008	11.5999999999999996	0	11.60000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Tortonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+11	Serravallian	International stratigraphic chart IUGS2008	13.6500000000000004	0	13.65000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Serravallian	urn:cgi:classifierScheme:ICS:StratChart:2008
+12	Langhian	International stratigraphic chart IUGS2008	15.9700000000000006	0	15.97000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Langhian	urn:cgi:classifierScheme:ICS:StratChart:2008
+13	Burdigalian	International stratigraphic chart IUGS2008	20.4299999999999997	0	20.43000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Burdigalian	urn:cgi:classifierScheme:ICS:StratChart:2008
+14	Miocene	International stratigraphic chart IUGS2008	23.0300000000000011	0	23.03000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Miocene	urn:cgi:classifierScheme:ICS:StratChart:2008
+15	Neogene	International stratigraphic chart IUGS2008	23.0300000000000011	0	23.03000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Neogene	urn:cgi:classifierScheme:ICS:StratChart:2008
+16	Aquitanian	International stratigraphic chart IUGS2008	23.0300000000000011	0	23.03000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Aquitanian	urn:cgi:classifierScheme:ICS:StratChart:2008
+17	Chattian	International stratigraphic chart IUGS2008	28.4499999999999993	0.100000000000000006	28.45000000	0.10000000	urn:cgi:classifier:ICS:StratChart:2008:Chattian	urn:cgi:classifierScheme:ICS:StratChart:2008
+18	Rupelian	International stratigraphic chart IUGS2008	33.8999999999999986	0.100000000000000006	33.90000000	0.10000000	urn:cgi:classifier:ICS:StratChart:2008:Rupelian	urn:cgi:classifierScheme:ICS:StratChart:2008
+19	Oligocene	International stratigraphic chart IUGS2008	33.8999999999999986	0	33.90000000	0.10000000	urn:cgi:classifier:ICS:StratChart:2008:Oligocene	urn:cgi:classifierScheme:ICS:StratChart:2008
+20	Priabonian	International stratigraphic chart IUGS2008	37.2000000000000028	0.100000000000000006	37.20000000	0.10000000	urn:cgi:classifier:ICS:StratChart:2008:Priabonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+21	Bartonian	International stratigraphic chart IUGS2008	40.3999999999999986	0.100000000000000006	40.40000000	0.20000000	urn:cgi:classifier:ICS:StratChart:2008:Bartonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+22	Lutetian	International stratigraphic chart IUGS2008	48.6000000000000014	0.200000000000000011	48.60000000	0.20000000	urn:cgi:classifier:ICS:StratChart:2008:Lutetian	urn:cgi:classifierScheme:ICS:StratChart:2008
+23	Eocene	International stratigraphic chart IUGS2008	55.7999999999999972	0.100000000000000006	55.80000000	0.20000000	urn:cgi:classifier:ICS:StratChart:2008:Eocene	urn:cgi:classifierScheme:ICS:StratChart:2008
+24	Ypresian	International stratigraphic chart IUGS2008	55.7999999999999972	0.200000000000000011	55.80000000	0.20000000	urn:cgi:classifier:ICS:StratChart:2008:Ypresian	urn:cgi:classifierScheme:ICS:StratChart:2008
+25	Thanetian	International stratigraphic chart IUGS2008	58.7000000000000028	0.200000000000000011	58.70000000	0.20000000	urn:cgi:classifier:ICS:StratChart:2008:Thanetian	urn:cgi:classifierScheme:ICS:StratChart:2008
+26	Selandian	International stratigraphic chart IUGS2008	61.7000000000000028	0.200000000000000011	61.70000000	0.20000000	urn:cgi:classifier:ICS:StratChart:2008:Selandian	urn:cgi:classifierScheme:ICS:StratChart:2008
+27	Paleogene	International stratigraphic chart IUGS2008	65.5	0	65.50000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Paleogene	urn:cgi:classifierScheme:ICS:StratChart:2008
+28	Paleocene	International stratigraphic chart IUGS2008	65.5	0.200000000000000011	65.50000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Paleocene	urn:cgi:classifierScheme:ICS:StratChart:2008
+29	Danian	International stratigraphic chart IUGS2008	65.5	0.200000000000000011	65.50000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Danian	urn:cgi:classifierScheme:ICS:StratChart:2008
+30	Maastrichtian	International stratigraphic chart IUGS2008	70.5999999999999943	0	70.60000000	0.60000000	urn:cgi:classifier:ICS:StratChart:2008:Maastrichtian	urn:cgi:classifierScheme:ICS:StratChart:2008
+31	Campanian	International stratigraphic chart IUGS2008	83.5	0.599999999999999978	83.50000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Campanian	urn:cgi:classifierScheme:ICS:StratChart:2008
+32	Santonian	International stratigraphic chart IUGS2008	85.7999999999999972	0.699999999999999956	85.80000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Santonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+33	Coniacian	International stratigraphic chart IUGS2008	89.2999999999999972	0.699999999999999956	89.30000000	1.00000000	urn:cgi:classifier:ICS:StratChart:2008:Coniacian	urn:cgi:classifierScheme:ICS:StratChart:2008
+34	Turonian	International stratigraphic chart IUGS2008	93.5	1	93.50000000	0.80000000	urn:cgi:classifier:ICS:StratChart:2008:Turonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+35	Cenomanian	International stratigraphic chart IUGS2008	99.5999999999999943	0.800000000000000044	99.60000000	0.90000000	urn:cgi:classifier:ICS:StratChart:2008:Cenomanian	urn:cgi:classifierScheme:ICS:StratChart:2008
+36	UpperCretaceous	International stratigraphic chart IUGS2008	99.5999999999999943	0	99.60000000	0.90000000	urn:cgi:classifier:ICS:StratChart:2008:UpperCretaceous	urn:cgi:classifierScheme:ICS:StratChart:2008
+37	Albian	International stratigraphic chart IUGS2008	112	0.900000000000000022	112.00000000	1.00000000	urn:cgi:classifier:ICS:StratChart:2008:Albian	urn:cgi:classifierScheme:ICS:StratChart:2008
+38	Aptian	International stratigraphic chart IUGS2008	125	1	125.00000000	1.00000000	urn:cgi:classifier:ICS:StratChart:2008:Aptian	urn:cgi:classifierScheme:ICS:StratChart:2008
+39	Barremian	International stratigraphic chart IUGS2008	130	1	130.00000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:Barremian	urn:cgi:classifierScheme:ICS:StratChart:2008
+40	Hauterivian	International stratigraphic chart IUGS2008	136.400000000000006	1.5	136.40000000	2.00000000	urn:cgi:classifier:ICS:StratChart:2008:Hauterivian	urn:cgi:classifierScheme:ICS:StratChart:2008
+41	Valanginian	International stratigraphic chart IUGS2008	140.199999999999989	2	140.20000000	3.00000000	urn:cgi:classifier:ICS:StratChart:2008:Valanginian	urn:cgi:classifierScheme:ICS:StratChart:2008
+42	Cretaceous	International stratigraphic chart IUGS2008	145.400000000000006	0	145.40000000	4.00000000	urn:cgi:classifier:ICS:StratChart:2008:Cretaceous	urn:cgi:classifierScheme:ICS:StratChart:2008
+43	Berriasian	International stratigraphic chart IUGS2008	145.400000000000006	3	145.40000000	4.00000000	urn:cgi:classifier:ICS:StratChart:2008:Berriasian	urn:cgi:classifierScheme:ICS:StratChart:2008
+44	LowerCretaceous	International stratigraphic chart IUGS2008	145.400000000000006	0.900000000000000022	145.40000000	4.00000000	urn:cgi:classifier:ICS:StratChart:2008:LowerCretaceous	urn:cgi:classifierScheme:ICS:StratChart:2008
+45	Tithonian	International stratigraphic chart IUGS2008	150.800000000000011	4	150.80000000	4.00000000	urn:cgi:classifier:ICS:StratChart:2008:Tithonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+46	Kimmeridgian	International stratigraphic chart IUGS2008	155.699999999999989	4	155.70000000	4.00000000	urn:cgi:classifier:ICS:StratChart:2008:Kimmeridgian	urn:cgi:classifierScheme:ICS:StratChart:2008
+47	Oxfordian	International stratigraphic chart IUGS2008	161.199999999999989	4	161.20000000	4.00000000	urn:cgi:classifier:ICS:StratChart:2008:Oxfordian	urn:cgi:classifierScheme:ICS:StratChart:2008
+48	UpperJurassic	International stratigraphic chart IUGS2008	161.199999999999989	4	161.20000000	4.00000000	urn:cgi:classifier:ICS:StratChart:2008:UpperJurassic	urn:cgi:classifierScheme:ICS:StratChart:2008
+49	Callovian	International stratigraphic chart IUGS2008	164.699999999999989	4	164.70000000	4.00000000	urn:cgi:classifier:ICS:StratChart:2008:Callovian	urn:cgi:classifierScheme:ICS:StratChart:2008
+50	Bathonian	International stratigraphic chart IUGS2008	167.699999999999989	4	167.70000000	3.50000000	urn:cgi:classifier:ICS:StratChart:2008:Bathonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+51	Bajocian	International stratigraphic chart IUGS2008	171.599999999999994	3.5	171.60000000	3.00000000	urn:cgi:classifier:ICS:StratChart:2008:Bajocian	urn:cgi:classifierScheme:ICS:StratChart:2008
+52	Aalenian	International stratigraphic chart IUGS2008	175.599999999999994	3	175.60000000	2.00000000	urn:cgi:classifier:ICS:StratChart:2008:Aalenian	urn:cgi:classifierScheme:ICS:StratChart:2008
+53	MiddleJurassic	International stratigraphic chart IUGS2008	175.599999999999994	4	175.60000000	2.00000000	urn:cgi:classifier:ICS:StratChart:2008:MiddleJurassic	urn:cgi:classifierScheme:ICS:StratChart:2008
+54	Toarcian	International stratigraphic chart IUGS2008	183	2	183.00000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:Toarcian	urn:cgi:classifierScheme:ICS:StratChart:2008
+55	Pliensbachian	International stratigraphic chart IUGS2008	189.599999999999994	1.5	189.60000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:Pliensbachian	urn:cgi:classifierScheme:ICS:StratChart:2008
+56	Sinemurian	International stratigraphic chart IUGS2008	196.5	1.5	196.50000000	1.00000000	urn:cgi:classifier:ICS:StratChart:2008:Sinemurian	urn:cgi:classifierScheme:ICS:StratChart:2008
+57	Hettangian	International stratigraphic chart IUGS2008	199.599999999999994	1	199.60000000	0.60000000	urn:cgi:classifier:ICS:StratChart:2008:Hettangian	urn:cgi:classifierScheme:ICS:StratChart:2008
+58	Jurassic	International stratigraphic chart IUGS2008	199.599999999999994	4	199.60000000	0.60000000	urn:cgi:classifier:ICS:StratChart:2008:Jurassic	urn:cgi:classifierScheme:ICS:StratChart:2008
+59	LowerJurassic	International stratigraphic chart IUGS2008	199.599999999999994	2	199.60000000	0.60000000	urn:cgi:classifier:ICS:StratChart:2008:LowerJurassic	urn:cgi:classifierScheme:ICS:StratChart:2008
+60	Rhaetian	International stratigraphic chart IUGS2008	203.599999999999994	0.599999999999999978	203.60000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:Rhaetian	urn:cgi:classifierScheme:ICS:StratChart:2008
+61	Norian	International stratigraphic chart IUGS2008	216.5	1.5	216.50000000	2.00000000	urn:cgi:classifier:ICS:StratChart:2008:Norian	urn:cgi:classifierScheme:ICS:StratChart:2008
+62	UpperTriassic	International stratigraphic chart IUGS2008	228	0.599999999999999978	228.00000000	2.00000000	urn:cgi:classifier:ICS:StratChart:2008:UpperTriassic	urn:cgi:classifierScheme:ICS:StratChart:2008
+63	Carnian	International stratigraphic chart IUGS2008	228	2	228.00000000	2.00000000	urn:cgi:classifier:ICS:StratChart:2008:Carnian	urn:cgi:classifierScheme:ICS:StratChart:2008
+64	Ladinian	International stratigraphic chart IUGS2008	237	2	237.00000000	2.00000000	urn:cgi:classifier:ICS:StratChart:2008:Ladinian	urn:cgi:classifierScheme:ICS:StratChart:2008
+65	MiddleTriassic	International stratigraphic chart IUGS2008	245	2	245.00000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:MiddleTriassic	urn:cgi:classifierScheme:ICS:StratChart:2008
+66	Anisian	International stratigraphic chart IUGS2008	245	2	245.00000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:Anisian	urn:cgi:classifierScheme:ICS:StratChart:2008
+67	Olenekian	International stratigraphic chart IUGS2008	249.699999999999989	1.5	249.70000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Olenekian	urn:cgi:classifierScheme:ICS:StratChart:2008
+68	Mesozoic	International stratigraphic chart IUGS2008	251	0	251.00000000	0.40000000	urn:cgi:classifier:ICS:StratChart:2008:Mesozoic	urn:cgi:classifierScheme:ICS:StratChart:2008
+69	Triassic	International stratigraphic chart IUGS2008	251	0.599999999999999978	251.00000000	0.40000000	urn:cgi:classifier:ICS:StratChart:2008:Triassic	urn:cgi:classifierScheme:ICS:StratChart:2008
+70	LowerTriassic	International stratigraphic chart IUGS2008	251	1.5	251.00000000	0.40000000	urn:cgi:classifier:ICS:StratChart:2008:LowerTriassic	urn:cgi:classifierScheme:ICS:StratChart:2008
+71	Induan	International stratigraphic chart IUGS2008	251	0.699999999999999956	251.00000000	0.40000000	urn:cgi:classifier:ICS:StratChart:2008:Induan	urn:cgi:classifierScheme:ICS:StratChart:2008
+72	Changhsingian	International stratigraphic chart IUGS2008	253.800000000000011	0.400000000000000022	253.80000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Changhsingian	urn:cgi:classifierScheme:ICS:StratChart:2008
+73	Lopingian	International stratigraphic chart IUGS2008	260.399999999999977	0.400000000000000022	260.40000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Lopingian	urn:cgi:classifierScheme:ICS:StratChart:2008
+74	Wuchiapingian	International stratigraphic chart IUGS2008	260.399999999999977	0.699999999999999956	260.40000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Wuchiapingian	urn:cgi:classifierScheme:ICS:StratChart:2008
+75	Capitanian	International stratigraphic chart IUGS2008	265.800000000000011	0.699999999999999956	265.80000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Capitanian	urn:cgi:classifierScheme:ICS:StratChart:2008
+76	Wordian	International stratigraphic chart IUGS2008	268	0.699999999999999956	268.00000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Wordian	urn:cgi:classifierScheme:ICS:StratChart:2008
+77	Guadalupian	International stratigraphic chart IUGS2008	270.600000000000023	0.699999999999999956	270.60000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Guadalupian	urn:cgi:classifierScheme:ICS:StratChart:2008
+78	Roadian	International stratigraphic chart IUGS2008	270.600000000000023	0.699999999999999956	270.60000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Roadian	urn:cgi:classifierScheme:ICS:StratChart:2008
+79	Kungurian	International stratigraphic chart IUGS2008	275.600000000000023	0.699999999999999956	275.60000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Kungurian	urn:cgi:classifierScheme:ICS:StratChart:2008
+80	Artinskian	International stratigraphic chart IUGS2008	284.399999999999977	0.699999999999999956	284.40000000	0.70000000	urn:cgi:classifier:ICS:StratChart:2008:Artinskian	urn:cgi:classifierScheme:ICS:StratChart:2008
+81	Sakmarian	International stratigraphic chart IUGS2008	294.600000000000023	0.699999999999999956	294.60000000	0.80000000	urn:cgi:classifier:ICS:StratChart:2008:Sakmarian	urn:cgi:classifierScheme:ICS:StratChart:2008
+82	Permian	International stratigraphic chart IUGS2008	299	0.400000000000000022	299.00000000	0.80000000	urn:cgi:classifier:ICS:StratChart:2008:Permian	urn:cgi:classifierScheme:ICS:StratChart:2008
+83	Cisuralian	International stratigraphic chart IUGS2008	299	0.699999999999999956	299.00000000	0.80000000	urn:cgi:classifier:ICS:StratChart:2008:Cisuralian	urn:cgi:classifierScheme:ICS:StratChart:2008
+84	Asselian	International stratigraphic chart IUGS2008	299	0.800000000000000044	299.00000000	0.80000000	urn:cgi:classifier:ICS:StratChart:2008:Asselian	urn:cgi:classifierScheme:ICS:StratChart:2008
+85	Gzhelian	International stratigraphic chart IUGS2008	303.899999999999977	0.800000000000000044	303.90000000	0.90000000	urn:cgi:classifier:ICS:StratChart:2008:Gzhelian	urn:cgi:classifierScheme:ICS:StratChart:2008
+86	Kasimovian	International stratigraphic chart IUGS2008	306.5	0.900000000000000022	306.50000000	1.00000000	urn:cgi:classifier:ICS:StratChart:2008:Kasimovian	urn:cgi:classifierScheme:ICS:StratChart:2008
+87	Moscovian	International stratigraphic chart IUGS2008	311.699999999999989	1	311.70000000	1.10000000	urn:cgi:classifier:ICS:StratChart:2008:Moscovian	urn:cgi:classifierScheme:ICS:StratChart:2008
+88	Bashkirian	International stratigraphic chart IUGS2008	318.100000000000023	1.10000000000000009	318.10000000	1.30000000	urn:cgi:classifier:ICS:StratChart:2008:Bashkirian	urn:cgi:classifierScheme:ICS:StratChart:2008
+89	Pennsylvanian	International stratigraphic chart IUGS2008	318.100000000000023	0.800000000000000044	318.10000000	1.30000000	urn:cgi:classifier:ICS:StratChart:2008:Pennsylvanian	urn:cgi:classifierScheme:ICS:StratChart:2008
+90	Serpukhovian	International stratigraphic chart IUGS2008	326.399999999999977	1.30000000000000004	326.40000000	1.60000000	urn:cgi:classifier:ICS:StratChart:2008:Serpukhovian	urn:cgi:classifierScheme:ICS:StratChart:2008
+91	Visean	International stratigraphic chart IUGS2008	345.300000000000011	1.60000000000000009	345.30000000	2.10000000	urn:cgi:classifier:ICS:StratChart:2008:Visean	urn:cgi:classifierScheme:ICS:StratChart:2008
+92	Mississippian	International stratigraphic chart IUGS2008	359.199999999999989	1.30000000000000004	359.20000000	2.50000000	urn:cgi:classifier:ICS:StratChart:2008:Mississippian	urn:cgi:classifierScheme:ICS:StratChart:2008
+93	Tournaisian	International stratigraphic chart IUGS2008	359.199999999999989	2.10000000000000009	359.20000000	2.50000000	urn:cgi:classifier:ICS:StratChart:2008:Tournaisian	urn:cgi:classifierScheme:ICS:StratChart:2008
+94	Carboniferous	International stratigraphic chart IUGS2008	359.199999999999989	0.800000000000000044	359.20000000	2.50000000	urn:cgi:classifier:ICS:StratChart:2008:Carboniferous	urn:cgi:classifierScheme:ICS:StratChart:2008
+95	Famennian	International stratigraphic chart IUGS2008	374.5	2.5	374.50000000	2.60000000	urn:cgi:classifier:ICS:StratChart:2008:Famennian	urn:cgi:classifierScheme:ICS:StratChart:2008
+96	Frasnian	International stratigraphic chart IUGS2008	385.300000000000011	2.60000000000000009	385.30000000	2.60000000	urn:cgi:classifier:ICS:StratChart:2008:Frasnian	urn:cgi:classifierScheme:ICS:StratChart:2008
+97	UpperDevonian	International stratigraphic chart IUGS2008	385.300000000000011	2.5	385.30000000	2.60000000	urn:cgi:classifier:ICS:StratChart:2008:UpperDevonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+98	Givetian	International stratigraphic chart IUGS2008	391.800000000000011	2.60000000000000009	391.80000000	2.70000000	urn:cgi:classifier:ICS:StratChart:2008:Givetian	urn:cgi:classifierScheme:ICS:StratChart:2008
+99	Eifelian	International stratigraphic chart IUGS2008	397.5	2.70000000000000018	397.50000000	2.70000000	urn:cgi:classifier:ICS:StratChart:2008:Eifelian	urn:cgi:classifierScheme:ICS:StratChart:2008
+100	MiddleDevonian	International stratigraphic chart IUGS2008	397.5	2.60000000000000009	397.50000000	2.70000000	urn:cgi:classifier:ICS:StratChart:2008:MiddleDevonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+101	Emsian	International stratigraphic chart IUGS2008	407	2.70000000000000018	407.00000000	2.80000000	urn:cgi:classifier:ICS:StratChart:2008:Emsian	urn:cgi:classifierScheme:ICS:StratChart:2008
+102	Pragian	International stratigraphic chart IUGS2008	411.199999999999989	2.79999999999999982	411.20000000	2.80000000	urn:cgi:classifier:ICS:StratChart:2008:Pragian	urn:cgi:classifierScheme:ICS:StratChart:2008
+103	LowerDevonian	International stratigraphic chart IUGS2008	416	2.70000000000000018	416.00000000	2.80000000	urn:cgi:classifier:ICS:StratChart:2008:LowerDevonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+104	Lochkovian	International stratigraphic chart IUGS2008	416	2.79999999999999982	416.00000000	2.80000000	urn:cgi:classifier:ICS:StratChart:2008:Lochkovian	urn:cgi:classifierScheme:ICS:StratChart:2008
+105	Devonian	International stratigraphic chart IUGS2008	416	2.5	416.00000000	2.80000000	urn:cgi:classifier:ICS:StratChart:2008:Devonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+106	Pridoli	International stratigraphic chart IUGS2008	418.699999999999989	2.79999999999999982	418.70000000	2.70000000	urn:cgi:classifier:ICS:StratChart:2008:Pridoli	urn:cgi:classifierScheme:ICS:StratChart:2008
+107	Ludfordian	International stratigraphic chart IUGS2008	421.300000000000011	2.5	421.30000000	2.60000000	urn:cgi:classifier:ICS:StratChart:2008:Ludfordian	urn:cgi:classifierScheme:ICS:StratChart:2008
+108	Ludlow	International stratigraphic chart IUGS2008	422.899999999999977	2.70000000000000018	422.90000000	2.50000000	urn:cgi:classifier:ICS:StratChart:2008:Ludlow	urn:cgi:classifierScheme:ICS:StratChart:2008
+109	Gorstian	International stratigraphic chart IUGS2008	422.899999999999977	2.60000000000000009	422.90000000	2.50000000	urn:cgi:classifier:ICS:StratChart:2008:Gorstian	urn:cgi:classifierScheme:ICS:StratChart:2008
+110	Homerian	International stratigraphic chart IUGS2008	426.199999999999989	2.29999999999999982	426.20000000	2.40000000	urn:cgi:classifier:ICS:StratChart:2008:Homerian	urn:cgi:classifierScheme:ICS:StratChart:2008
+111	Wenlock	International stratigraphic chart IUGS2008	428.199999999999989	2.5	428.20000000	2.30000000	urn:cgi:classifier:ICS:StratChart:2008:Wenlock	urn:cgi:classifierScheme:ICS:StratChart:2008
+112	Sheinwoodian	International stratigraphic chart IUGS2008	428.199999999999989	2.39999999999999991	428.20000000	2.30000000	urn:cgi:classifier:ICS:StratChart:2008:Sheinwoodian	urn:cgi:classifierScheme:ICS:StratChart:2008
+113	Telychian	International stratigraphic chart IUGS2008	436	2.29999999999999982	436.00000000	1.90000000	urn:cgi:classifier:ICS:StratChart:2008:Telychian	urn:cgi:classifierScheme:ICS:StratChart:2008
+114	Aeronian	International stratigraphic chart IUGS2008	439	1.89999999999999991	439.00000000	1.80000000	urn:cgi:classifier:ICS:StratChart:2008:Aeronian	urn:cgi:classifierScheme:ICS:StratChart:2008
+115	Silurian	International stratigraphic chart IUGS2008	443.699999999999989	2.79999999999999982	443.70000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:Silurian	urn:cgi:classifierScheme:ICS:StratChart:2008
+116	Llandovery	International stratigraphic chart IUGS2008	443.699999999999989	2.29999999999999982	443.70000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:Llandovery	urn:cgi:classifierScheme:ICS:StratChart:2008
+117	Rhuddanian	International stratigraphic chart IUGS2008	443.699999999999989	1.80000000000000004	443.70000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:Rhuddanian	urn:cgi:classifierScheme:ICS:StratChart:2008
+118	Hirnantian	International stratigraphic chart IUGS2008	445.600000000000023	1.5	445.60000000	1.50000000	urn:cgi:classifier:ICS:StratChart:2008:Hirnantian	urn:cgi:classifierScheme:ICS:StratChart:2008
+119	Katian	International stratigraphic chart IUGS2008	455.800000000000011	1.5	455.80000000	1.60000000	urn:cgi:classifier:ICS:StratChart:2008:Katian	urn:cgi:classifierScheme:ICS:StratChart:2008
+120	Sandbian	International stratigraphic chart IUGS2008	460.899999999999977	1.60000000000000009	460.90000000	1.60000000	urn:cgi:classifier:ICS:StratChart:2008:Sandbian	urn:cgi:classifierScheme:ICS:StratChart:2008
+121	UpperOrdovician	International stratigraphic chart IUGS2008	460.899999999999977	1.5	460.90000000	1.60000000	urn:cgi:classifier:ICS:StratChart:2008:UpperOrdovician	urn:cgi:classifierScheme:ICS:StratChart:2008
+122	Darriwilian	International stratigraphic chart IUGS2008	468.100000000000023	1.60000000000000009	468.10000000	1.60000000	urn:cgi:classifier:ICS:StratChart:2008:Darriwilian	urn:cgi:classifierScheme:ICS:StratChart:2008
+123	MiddleOrdovician	International stratigraphic chart IUGS2008	471.800000000000011	1.60000000000000009	471.80000000	1.60000000	urn:cgi:classifier:ICS:StratChart:2008:MiddleOrdovician	urn:cgi:classifierScheme:ICS:StratChart:2008
+124	Dapingian	International stratigraphic chart IUGS2008	471.800000000000011	1.60000000000000009	471.80000000	1.60000000	urn:cgi:classifier:ICS:StratChart:2008:Dapingian	urn:cgi:classifierScheme:ICS:StratChart:2008
+125	Floian	International stratigraphic chart IUGS2008	478.600000000000023	1.60000000000000009	478.60000000	1.70000000	urn:cgi:classifier:ICS:StratChart:2008:Floian	urn:cgi:classifierScheme:ICS:StratChart:2008
+126	LowerOrdovician	International stratigraphic chart IUGS2008	488.300000000000011	1.60000000000000009	488.30000000	1.70000000	urn:cgi:classifier:ICS:StratChart:2008:LowerOrdovician	urn:cgi:classifierScheme:ICS:StratChart:2008
+127	Tremadocian	International stratigraphic chart IUGS2008	488.300000000000011	1.69999999999999996	488.30000000	1.70000000	urn:cgi:classifier:ICS:StratChart:2008:Tremadocian	urn:cgi:classifierScheme:ICS:StratChart:2008
+128	Ordovician	International stratigraphic chart IUGS2008	488.300000000000011	1.5	488.30000000	1.70000000	urn:cgi:classifier:ICS:StratChart:2008:Ordovician	urn:cgi:classifierScheme:ICS:StratChart:2008
+129	Stage10	International stratigraphic chart IUGS2008	492	1.69999999999999996	492.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Stage10	urn:cgi:classifierScheme:ICS:StratChart:2008
+130	Stage9	International stratigraphic chart IUGS2008	496	-9999	496.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Stage9	urn:cgi:classifierScheme:ICS:StratChart:2008
+131	Paibian	International stratigraphic chart IUGS2008	501	-9999	501.00000000	2.00000000	urn:cgi:classifier:ICS:StratChart:2008:Paibian	urn:cgi:classifierScheme:ICS:StratChart:2008
+132	Furongian	International stratigraphic chart IUGS2008	501	1.69999999999999996	501.00000000	2.00000000	urn:cgi:classifier:ICS:StratChart:2008:Furongian	urn:cgi:classifierScheme:ICS:StratChart:2008
+133	Stage7	International stratigraphic chart IUGS2008	503	2	503.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Stage7	urn:cgi:classifierScheme:ICS:StratChart:2008
+134	Drumian	International stratigraphic chart IUGS2008	506.5	-9999	506.50000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Drumian	urn:cgi:classifierScheme:ICS:StratChart:2008
+135	Series3	International stratigraphic chart IUGS2008	510	2	510.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Series3	urn:cgi:classifierScheme:ICS:StratChart:2008
+136	Stage5	International stratigraphic chart IUGS2008	510	-9999	510.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Stage5	urn:cgi:classifierScheme:ICS:StratChart:2008
+137	Stage4	International stratigraphic chart IUGS2008	517	-9999	517.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Stage4	urn:cgi:classifierScheme:ICS:StratChart:2008
+138	Stage3	International stratigraphic chart IUGS2008	521	-9999	521.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Stage3	urn:cgi:classifierScheme:ICS:StratChart:2008
+139	Series2	International stratigraphic chart IUGS2008	521	-9999	521.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Series2	urn:cgi:classifierScheme:ICS:StratChart:2008
+140	Stage2	International stratigraphic chart IUGS2008	534.600000000000023	-9999	534.60000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Stage2	urn:cgi:classifierScheme:ICS:StratChart:2008
+141	Paleozoic	International stratigraphic chart IUGS2008	542	0.400000000000000022	542.00000000	1.00000000	urn:cgi:classifier:ICS:StratChart:2008:Paleozoic	urn:cgi:classifierScheme:ICS:StratChart:2008
+142	Cambrian	International stratigraphic chart IUGS2008	542	1.69999999999999996	542.00000000	1.00000000	urn:cgi:classifier:ICS:StratChart:2008:Cambrian	urn:cgi:classifierScheme:ICS:StratChart:2008
+143	Fortunian	International stratigraphic chart IUGS2008	542	-9999	542.00000000	1.00000000	urn:cgi:classifier:ICS:StratChart:2008:Fortunian	urn:cgi:classifierScheme:ICS:StratChart:2008
+144	Terreneuvian	International stratigraphic chart IUGS2008	542	-9999	542.00000000	1.00000000	urn:cgi:classifier:ICS:StratChart:2008:Terreneuvian	urn:cgi:classifierScheme:ICS:StratChart:2008
+145	Ediacaran	International stratigraphic chart IUGS2008	630	1	630.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Ediacaran	urn:cgi:classifierScheme:ICS:StratChart:2008
+146	Cryogenian	International stratigraphic chart IUGS2008	850	-9999	850.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Cryogenian	urn:cgi:classifierScheme:ICS:StratChart:2008
+147	Neoproterozoic	International stratigraphic chart IUGS2008	1000	1	1000.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Neoproterozoic	urn:cgi:classifierScheme:ICS:StratChart:2008
+148	Tonian	International stratigraphic chart IUGS2008	1000	-9999	1000.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Tonian	urn:cgi:classifierScheme:ICS:StratChart:2008
+149	Stenian	International stratigraphic chart IUGS2008	1200	-9999	1200.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Stenian	urn:cgi:classifierScheme:ICS:StratChart:2008
+150	Ectasian	International stratigraphic chart IUGS2008	1400	-9999	1400.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Ectasian	urn:cgi:classifierScheme:ICS:StratChart:2008
+151	Mesoproterozoic	International stratigraphic chart IUGS2008	1600	-9999	1600.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Mesoproterozoic	urn:cgi:classifierScheme:ICS:StratChart:2008
+152	Calymmian	International stratigraphic chart IUGS2008	1600	-9999	1600.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Calymmian	urn:cgi:classifierScheme:ICS:StratChart:2008
+153	Statherian	International stratigraphic chart IUGS2008	1800	-9999	1800.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Statherian	urn:cgi:classifierScheme:ICS:StratChart:2008
+154	Orosirian	International stratigraphic chart IUGS2008	2050	-9999	2050.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Orosirian	urn:cgi:classifierScheme:ICS:StratChart:2008
+155	Rhyacian	International stratigraphic chart IUGS2008	2300	-9999	2300.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Rhyacian	urn:cgi:classifierScheme:ICS:StratChart:2008
+156	Paleoproterozoic	International stratigraphic chart IUGS2008	2500	-9999	2500.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Paleoproterozoic	urn:cgi:classifierScheme:ICS:StratChart:2008
+157	Siderian	International stratigraphic chart IUGS2008	2500	-9999	2500.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Siderian	urn:cgi:classifierScheme:ICS:StratChart:2008
+158	Proterozoic	International stratigraphic chart IUGS2008	2500	1	2500.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Proterozoic	urn:cgi:classifierScheme:ICS:StratChart:2008
+159	Neoarchean	International stratigraphic chart IUGS2008	2800	-9999	2800.00000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Neoarchean	urn:cgi:classifierScheme:ICS:StratChart:2008
+160	Mesoarchean	International stratigraphic chart IUGS2008	3200	0	3200.00000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Mesoarchean	urn:cgi:classifierScheme:ICS:StratChart:2008
+161	Paleoarchean	International stratigraphic chart IUGS2008	3600	0	3600.00000000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Paleoarchean	urn:cgi:classifierScheme:ICS:StratChart:2008
+162	Eoarchean	International stratigraphic chart IUGS2008	4000	0	4000.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Eoarchean	urn:cgi:classifierScheme:ICS:StratChart:2008
+163	Archean	International stratigraphic chart IUGS2008	4000	-9999	4000.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Archean	urn:cgi:classifierScheme:ICS:StratChart:2008
+164	Hadean	International stratigraphic chart IUGS2008	4600	-9999	4600.00000000	-9999.00000000	urn:cgi:classifier:ICS:StratChart:2008:Hadean	urn:cgi:classifierScheme:ICS:StratChart:2008
+165	Holocene	International stratigraphic chart IUGS2008	0	0	0.01170000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Holocene	urn:cgi:classifierScheme:ICS:StratChart:2008
+166	Quaternary	International stratigraphic chart IUGS2008	0	0	2.58800000	0.00000000	urn:cgi:classifier:ICS:StratChart:2008:Quaternary	urn:cgi:classifierScheme:ICS:StratChart:2008
+167	Cenozoic	International stratigraphic chart IUGS2008	0	0	65.50000000	0.30000000	urn:cgi:classifier:ICS:StratChart:2008:Cenozoic	urn:cgi:classifierScheme:ICS:StratChart:2008
+\.
+
+
+--
+-- TOC entry 2881 (class 0 OID 20280)
+-- Dependencies: 2500
+-- Data for Name: simplelithology200811; Type: TABLE DATA; Schema: usgin; Owner: postgres
+--
+
+COPY simplelithology200811 (objectid, hkey, term, synonym, definition, sourcenote, discussion, cgiurn, completecgiurn, geneticcategory, particletype, grainsize, chemicalcategory, petrographiccategory, fabrictype, shape, sorting, consolidationdegree, qapfigneous, tas, qfl, notes) FROM stdin;
+1	0...	Compound material	\N	An Earth Material composed of an aggregation of particles of Earth Material, possibly including other Compound Materials. This is 'top' of lithology category hierarchy, and should be used to indicate 'any rock or unconsolidated material'.	NADM C1, 2004	\N	compound_material	urn:cgi:classifier:CGI:SimpleLithology:200811:compound_material	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+2	1..	Breccia	\N	Coarse-grained material composed of angular broken rock fragments; the fragments typically have sharp edges and unworn corners.The fragments may be held together by a mineral cement, or in a fine-grained matrix.Clasts may be of any composition or origin.	Neuendorf et al. 2005	Need to be clear that coarse grain size refers to fragments produced by brittle deformation process. Consolidation state is not a defining property. Some rounding of clasts is not unheard of in breccia.This concept is for generic breccia for which the genesis/origin is not specified (e.g. includes rock avalanche, solution collapse, hydrothermal, intrusive, and fault-related breccia) - use the 'breccia-gouge series' concept for fault breccias.	breccia	urn:cgi:classifier:CGI:SimpleLithology:200811:breccia	\N	grain	phaneritic	\N	\N	\N	angular	\N	\N	\N	\N	\N	Should there be a genetic category for a material whose definition states unspecified genesis?(What about multiples - sedimentary, igneous, tectonic etc.?)
+3	2..	Composite genesis material	\N	Material of unspecified consolidation state formed by geological modification of pre-existing materials outside the realm of igneous and sedimentary processes. Includes rocks formed by impact metamorphism, standard dynamothermal metamorphism, brittle deformation, weathering, metasomatism and hydrothermal alteration (diagenesis is a sedimentary process in this context).	SLTTm 2004	\N	composite_genesis_material	urn:cgi:classifier:CGI:SimpleLithology:200811:composite_genesis_material	composite genesis	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+4	2.0..	Fault-related material	\N	Material formed as a result brittle faulting, composed of greater than 10 percent matrix; matrix is fine-grained material caused by tectonic grainsize reduction.Includes cohesive (cataclasite series) and non-cohesive (breccia-gouge series) material.	this vocabulary; SLTTm 2004	\N	fault_related_material	urn:cgi:classifier:CGI:SimpleLithology:200811:fault_related_material	deformation	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+5	2.0.0	Breccia-gouge series	\N	Fault material with features such as void spaces (filled or unfilled), or unconsolidated matrix material between fragments, indicating loss of cohesion during deformation.Includes fault-related breccia and gouge.	SLTTm 2004	\N	breccia_gouge_series	urn:cgi:classifier:CGI:SimpleLithology:200811:breccia_gouge_series	tectonic	grain	\N	\N	\N	\N	angular	\N	\N	\N	\N	\N	\N
+6	2.0.1	Cataclasite series	\N	Fault-related rock that maintained primary cohesion during deformation, with matrix comprising 50 to 90 percent of rock mass; matrix is fine-grained material caused by tectonic grainsize reduction.Includes cataclasite, protocataclasite and ultracataclasite.	Sibson, 1977; Scholz, 1990; Snoke and Tullis, 1998;Barker, 1998 Appendix II; NADM SLTTm, 2004	concept is equivalent to NGMDB Cohesive cataclastic rock.	cataclasite_series	urn:cgi:classifier:CGI:SimpleLithology:200811:cataclasite_series	deformation	grain	fine grained, phaneritic	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+7	2.1..	Duricrust	\N	Rock forming a hard crust or layer at or near the Earth's surface at the time of formation, e.g. in the upper horizons of a soil, characterized by structures indicative of pedogenic origin.	this vocabulary	\N	duricrust	urn:cgi:classifier:CGI:SimpleLithology:200811:duricrust	weathering	\N	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+8	2.2..	Bauxite	\N	Highly aluminous material containing abundant aluminium hydroxides (gibbsite, less commonly boehmite, diaspore) and aluminium-substituted iron oxides or hydroxides and generally minor or negligible kaolin minerals; may contain up to 20 percent quartz.Commonly has a pisolitic or nodular texture, and may be cemented.	Eggleton, 2001	Consolidation degree not a factor - may be rock or unconsolidated.The original stuff (in India) was defined as 'so soft that any iron instrument readily cuts it', and there are four different contexts for it in the Australian regolith glossary (Eggleton, 2001).The concept definition here is paraphrased from Eggleton's definition (i) of three (the others are 'economic ore of aluminium' and 'karst bauxite', formed when bauxite minerals wash into limestone caves).	bauxite	urn:cgi:classifier:CGI:SimpleLithology:200811:bauxite	weathering	\N	\N	aluminous	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+9	3..	Unconsolidated material	\N	CompoundMaterial composed of an aggregation of particles that do not adhere to each other strongly enough that the aggregate can be considered a solid in its own right.	NGMDB	\N	unconsolidated_material	urn:cgi:classifier:CGI:SimpleLithology:200811:unconsolidated_material	\N	grain	\N	\N	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+10	3.0..	Anthropogenic unconsolidated material	\N	Unconsolidated material known to have artificial (human-related) origin.	this vocabulary	Renamed from NGMDB compilation-- 'artificial' to 'anthropogenic', for consistency with rest of GeoSciML vocab.	anthropogenic_unconsolidated_material	urn:cgi:classifier:CGI:SimpleLithology:200811:anthropogenic_unconsolidated_material	anthropogenic	\N	\N	\N	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+11	3.1..	Natural unconsolidated material	\N	Unconsolidated material known to have natural, ie. not human-made, origin.	this vocabulary	\N	natural_unconsolidated_material	urn:cgi:classifier:CGI:SimpleLithology:200811:natural_unconsolidated_material	geologic	grain	\N	\N	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+12	3.1.0	Sediment	\N	Unconsolidated material consisting of an aggregation of particles transported or deposited by air, water or ice, or that accumulated by other natural agents, such as chemical precipitation, and that forms in layers on the Earth's surface.Includes epiclastic deposits.	SLTTs 2004	\N	sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:sediment	sedimentary	grain, crystal	\N	\N	\N	\N	\N	\N	unconsolidated	\N	\N	\N	Particle type should be only 'grain'; crystalline chemical seds are necessarily consolidated, thus not sediment.
+13	3.1.0.0	Clastic sediment	\N	Sediment in which at least 50 percent of the constituent particles were derived from erosion, weathering, or mass-wasting of pre-existing earth materials, and transported to the place of deposition by mechanical agents such as water, wind, ice and gravity.	SLTTs, 2004; Neuendorf et al., 2005	One might ask if a mineral (one of the kinds of EarthMaterial) can be eroded, weathered, or mass wasted to form a particle...What is weathered, eroded or mass-wasted is a pre-existing compound material (NADM usage), whatever we choose to call that in this vocabulary. See also clastic sedimentary material comment.	clastic_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:clastic_sediment	sedimentary	grain	\N	\N	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+14	3.1.0.0.0	Diamicton	\N	Unsorted or poorly sorted, clastic sediment with a wide range of particle sizes such that it cannot be assigned to any other class.	Fairbridge and Bourgeois 1978	see diamictite comments	diamicton	urn:cgi:classifier:CGI:SimpleLithology:200811:diamicton	sedimentary	grain	\N	\N	\N	\N	\N	no sorting	unconsolidated	\N	\N	\N	\N
+15	3.1.0.0.1	Gravel	\N	Sediment containing greater than 30 percent gravel-size particles (greater than 2.0 mm diameter).	SLTTs 2004	Folk definition calls gravelly if greater than 30 percent greater than 2mm, Hallsworth & Knox put cut off at 25 percent.	gravel	urn:cgi:classifier:CGI:SimpleLithology:200811:gravel	sedimentary	grain	phaneritic	\N	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+16	3.1.0.0.2	Sand	\N	Clastic sediment in which less than 30 percent of particles are gravel (greater than 2 mm in diameter) and the sand to mud ratio is at least 1.	Neuendorf et al. 2005; NGMDB	concept corresponds to SLTTs sandy sediment (basically Folk).	sand	urn:cgi:classifier:CGI:SimpleLithology:200811:sand	sedimentary	grain	fine grained or phaneritic	\N	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+17	3.1.0.0.3	Mud	\N	Clastic sediment consisting of less than 30 percent gravel-size (2 mm) particles and with a mud to sand ratio greater than 1. Clasts may be of any composition or origin.	based on SLTTs 2004; Neuendorf et al. 2005; particle size from Wentworth grade scale	equivalent to muddy sediment category from SLTTs; this is a category that includes all the muddy sediment categories from Folk.	mud	urn:cgi:classifier:CGI:SimpleLithology:200811:mud	sedimentary	grain	aphanitic	\N	pelitic	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+18	3.1.0.1	Chemical sediment	\N	Sediment that consists of at least 50 percent material produced by chemical (organic or inorganic) processes within the basin of deposition. Includes organic-rich, non-clastic siliceous, carbonate, evaporite, iron-rich, and phosphatic sediment classes.	SLTTs 2004	\N	chemical_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:chemical_sediment	chemical sedimentary	grain or crystal	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+19	3.1.0.2	Biogenic sediment	\N	Sediment composed of greater than 50 percent material of biogenic origin.	SLTTs 2004	\N	biogenic_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:biogenic_sediment	biogenic	crystal or grain	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+20	3.1.0.2.0	Ooze	\N	Mud with a sand to mud ratio less than 1 to 9 that contains at least 30 percent skeletal remains of pelagic organisms.Less than 1 percent gravel and less than 50 percent carbonate minerals.	based on Bates and Jackson 1987 & Hallsworth & Knox 1999	\N	ooze	urn:cgi:classifier:CGI:SimpleLithology:200811:ooze	sedimentary	grain	aphanitic	siliceous, carbonate	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+21	3.1.0.3	Iron rich sediment	\N	Sediment that consists of at least 50 percent iron-bearing minerals (hematite, magnetite, limonite-group, siderite, iron-sulfides), as determined by hand-lens or petrographic analysis. Corresponds to a rock typically containing 15 percent iron by weight.	SLTTs 2004	\N	iron_rich_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:iron_rich_sediment	sedimentary	\N	\N	iron rich	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+22	3.1.0.4	Phosphatic sediment	\N	Sediment in which at least 50 percent of the primary and/or recrystallized constituents are phosphate minerals.	SLTTs 2004	\N	phosphatic_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:phosphatic_sediment	sedimentary	grain	\N	phosphatic	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+23	3.1.0.5	Non-clastic siliceous sediment	\N	Sediment that consists of at least 50 percent silicate mineral material, deposited directly by chemical or biological processes at the depositional surface, or in particles formed by chemical or biological processes within the basin of deposition.	NGMDB 2008; Hallsworth and Knox 1999	\N	non_clastic_siliceous_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:non_clastic_siliceous_sediment	sedimentary	\N	\N	siliceous	\N	\N	\N	\N	unconsolidated+P108	\N	\N	\N	\N
+24	3.1.0.6	Organic rich sediment	\N	Sediment with color, composition, texture and apparent density indicating greater than 50 percent organic content by weight on a moisture-free basis.	SLTTs 2004	\N	organic_rich_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:organic_rich_sediment	sedimentary	\N	\N	carbonaceous	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+25	3.1.0.6.0	Peat	\N	Unconsolidated organic-rich sediment composed of at least 50 percent semi-carbonised plant remains; individual remains commonly seen with unaided eye; yellowish brown to brownish black; generally fibrous texture; can be plastic or friable.In its natural state it can be readily cut and has a very high moisture content, generally greater than 90 percent.	Hallsworth & Knox 1999	\N	peat	urn:cgi:classifier:CGI:SimpleLithology:200811:peat	sedimentary	grain	\N	carbonaceous	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+26	3.1.0.7	Carbonate sediment	\N	Sediment in which at least 50 percent of the primary and/or recrystallized constituents are composed of one (or more) of the carbonate minerals calcite, aragonite and dolomite, in particles of intrabasinal origin.	SLTTs 2004	Calclastic sediment- clastic material derived from previously lithified and eroded carbonate rocks - is a problem. SLTTs proposal (followed in SMR NGMDB definitions) is to restrict carbonate sediment to intrabasinal origin, such that sand composed of carbonate grains derived from limestone outcrops would not be considered carbonate sediment. In this case, the clastic sediment classification (sand, diamicton) would be used. GeoSciML earth material description allows mineralogy of clasts to be described independently.	carbonate_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:carbonate_sediment	sedimentary	grain	\N	carbonate	\N	\N	\N	\N	unconsolidated	\N	\N	\N	not clear if should be granular or not specified crystallinity; is glassy possible?
+27	3.1.0.7.0	Dolomitic sediment	\N	Carbonate sediment with a ratio of magnesium carbonate to calcite (plus aragonite) greater than 1 to 1.	after SLTTs 2004, Hallsworth and Knox 1999	\N	dolomitic_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:dolomitic_sediment	sedimentary	crystal or granular	\N	carbonate, magnesian	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+28	3.1.0.7.1	Calcareous carbonate sediment	\N	Carbonate sediment with a calcite (plus aragonite) to dolomite ratio greater than 1 to 1.Includes lime-sediments.	after Hallsworth & Knox 1999	Added for completeness	calcareous_carbonate_sediment	urn:cgi:classifier:CGI:SimpleLithology:200811:calcareous_carbonate_sediment	sedimentary	grain	\N	calcareous carbonate	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+29	3.1.0.7.2	Carbonate gravel	\N	Carbonate sediment composed of more than 25 percent gravel-sized clasts (maximum diameter more than 2 mm).	Hallsworth & Knox 1999	LB: added for completeness.See 'carbonate mud' comments.	carbonate_gravel	urn:cgi:classifier:CGI:SimpleLithology:200811:carbonate_gravel	sedimentary	grain	phaneritic	carbonate	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+30	3.1.0.7.3	Carbonate sand	\N	Carbonate sediment composed of more than 75 percent sand-sized clasts (maximum diameter between 32 microns and 2 mm).	Hallsworth & Knox 1999	LB: added from NGMDB picklist.See 'carbonate mud' comments.	carbonate_sand	urn:cgi:classifier:CGI:SimpleLithology:200811:carbonate_sand	sedimentary	grain	sand	carbonate	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+31	3.1.0.7.4	Carbonate mud	\N	Carbonate sediment composed of more than 75 percent mud-sized clasts (maximum diameter less than 32 microns).	Hallsworth & Knox 1999	base on Hallsworth & Knox 1999 grainsize classification, p.8 part 3.1.1.1.	carbonate_mud	urn:cgi:classifier:CGI:SimpleLithology:200811:carbonate_mud	sedimentary	grain	fine-grained	carbonate	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+32	3.1.1	Tephra	\N	Unconsolidated pyroclastic material in which greater than 75 percent of the fragments are deposited as a direct result of volcanic processes and the deposit has not been reworked by epiclastic processes.Includes ash, lapilli tephra, bomb tephra,block tephra and unconsolidated agglomerate.	Hallsworth & Knox 1999; LeMaitre et al. 2002	\N	tephra	urn:cgi:classifier:CGI:SimpleLithology:200811:tephra	pyroclastic	grain	\N	\N	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+33	3.1.1.0	Ash and lapilli	\N	Tephra in which less than 25 percent of fragments are greater than 64 mm in longest dimension	Schmid 1981; LeMaitre et al. 2002	\N	ash_and_lapilli	urn:cgi:classifier:CGI:SimpleLithology:200811:ash_and_lapilli	volcanic	grain	fine grained	\N	\N	\N	\N	\N	unconsolidated	\N	\N	\N	\N
+34	3.1.1.1	Ash breccia, bomb, or block tephra	\N	Tephra in which more than 25 percent of particles are greater than 64 mm in largest dimension. Includes ash breccia, bomb tephra and block tephra of Gillespie and Styles (1999)	Schmid 1981; LeMaitre et al. 2002	What about 'coarse grained tephra' as the term, rather than a compound term?	ash_breccia_bomb_or_block_tephra	urn:cgi:classifier:CGI:SimpleLithology:200811:ash_breccia_bomb_or_block_tephra	pyroclastic	granular	phaneritic	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+35	4..	Rock	\N	Consolidated aggregate of one or more EarthMaterials, or a body of undifferentiated mineral matter, or of solid organic material.Includes mineral aggregates such as granite, shale, marble; glassy matter such as obsidian; and organic material such a coal. Excludes unconsolidated materials.	Jackson, 1997; NADM C1 2004; Neuendorf et al 2005	substitute EarthMaterial in GeoSciML/NADM 1 sense to allow for glass particles, open space, organic particles in rocks that are not 'undifferentiated mineral matter or solid organic matter'	rock	urn:cgi:classifier:CGI:SimpleLithology:200811:rock	geologic	\N	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+36	4.0..	Aphanite	\N	Rock that is too fine grained to categorize in more detail.	this vocabulary	This is an important concept for the GeoSciML list, but name for concept is problematic. Many people might assume 'aphanite' denotes igneous rocks?Maybe someone can come up with a better name for the concept.	aphanite	urn:cgi:classifier:CGI:SimpleLithology:200811:aphanite	\N	\N	fine grained	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+37	4.1..	Igneous rock	\N	Rock formed as a result of igneous processes, for example intrusion and cooling of magma in the crust, or volcanic eruption.	Neuendorf et al 2005	\N	igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:igneous_rock	igneous	\N	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+38	4.1.00	Glassy igneous rock	\N	Igneous rock that consists of greater than 90 percent glass.	This vocabulary	Changed name from 'glassy volcanic rock' to 'glassy igneous rock' to be consistent with other igneous rock concepts, and makes category more inclusive (chilled shallow intrusions in wet sediment, etc. could go in here). This removes the need for a 'volcanic material' category - any comments?'Volcanic' is a (genetic) term that we've avoided elsewhere (fine-grained igneous rock et al.).	glassy_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:glassy_igneous_rock	volcanic	no particles	glassy	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+39	4.1.01	Exotic composition igneous rock	\N	Rock with 'exotic' mineralogical, textural or field setting characteristics; typically dark colored, with abundant phenocrysts.Criteria include: presence of greater than 10 percent melilite or leucite; presence of kalsilite; greater than 50 percent carbonate minerals.	Gillespie and Styles 1999; LeMaitre et al. 2002	Other name proposed for category is'unusual igneous rock'	exotic_composition_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:exotic_composition_igneous_rock	igneous	crystal or granular	\N	\N	exotic	\N	\N	\N	consolidated	\N	\N	\N	\N
+40	4.1.01.0	Exotic alkaline rock	\N	Kimberlite, lamproite, or lamprophyre. Generally are potassic, mafic or ultramafic rocks. Olivine (commonly serpentinized in kimberlite), and phlogopite are significant constituents.	based on LeMaitre et al. 2002	Changed name from 'exotic mafite'. Suggestions for category name?	exotic_alkaline_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:exotic_alkaline_rock	igneous	crystal or granular	\N	\N	exotic	\N	\N	\N	consolidated	\N	\N	\N	kimberlite, carbonatite, and lamprophyre are explicitly included as lithology type categories; Melilitic, kalsilitic, leucitic, and lamproite occurrences would be included in this more general category
+41	4.1.01.1	Exotic alkalic igneous rock	\N	Igneous rock containing greater than 10 percent melilite or kalsilite. Typically undersaturated, ultrapotassic (kalsilitic rocks) or calcium-rich (melilitic rocks) mafic or ultramafic rocks.	based on LeMaitre et al. 2002	group Kalsilitic and melilitic rocks of LeMaitre et al 2002. Web search of literature indicates these types are commonly associated.	exotic_alkalic_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:exotic_alkalic_igneous_rock	igneous	crystal	\N	alkalic	exotic	\N	\N	\N	consolidated	\N	\N	\N	\N
+42	4.1.01.2	Carbonatite	\N	Igneous rock composed of more than 50 percent modal carbonate minerals.	LeMaitre et al. 2002	\N	carbonatite	urn:cgi:classifier:CGI:SimpleLithology:200811:carbonatite	igneous	crystal	\N	carbonate	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+43	4.1.02	Fragmental igneous rock	\N	Igneous rock in which greater than 75 percent of the rock consists of fragments produced as a result of igneous rock-forming process. Includes pyroclastic rocks, autobreccia associated with lava flows and intrusive breccias.Excludes deposits reworked by epiclastic processes.	NGMDB 2008	LB: added for completeness	fragmental_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:fragmental_igneous_rock	igneous	granular	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+44	4.1.02.0	Pyroclastic rock	\N	Fragmental igneous rock that consists of greater than 75 percent fragments produced as a direct result of eruption or extrusion of magma from within the earth onto its surface. Includes autobreccia associated with lava flows and excludes deposits reworked by epiclastic processes.	based on LeMaitre et al. 2002	\N	pyroclastic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:pyroclastic_rock	pyroclastic	grain	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+45	4.1.02.0.0	Tuff-breccia, agglomerate, or pyroclastic breccia	coarse-grained pyroclastic rock	Pyroclastic rock in which greater than 25 percent of particles are greater than 64 mm in largest dimension. Includes agglomerate, pyroclastic breccia of Gillespie and Styles (1999)	Schmid 1981; LeMaitre et al. 2002	see discussion for tuff	tuff_breccia_agglomerate_or_pyroclastic_breccia	urn:cgi:classifier:CGI:SimpleLithology:200811:tuff_breccia_agglomerate_or_pyroclastic_breccia	pyroclastic	grain	phaneritic	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+46	4.1.02.0.1	Ash tuff, lapillistone, and lapilli tuff	\N	Pyroclastic rock in which less than 25 percent of rock by volume are more than 64 mm in longest diameter. Includes tuff, lapilli tuff, and lapillistone.	Schmid 1981; LeMaitre et al. 2002	\N	ash_tuff_lapillistone_and_lapilli_tuff	urn:cgi:classifier:CGI:SimpleLithology:200811:ash_tuff_lapillistone_and_lapilli_tuff	pyroclastic	grain	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+47	4.1.03	Phaneritic igneous rock	\N	Igneous rock in which greater than 10 percent of rock is individual crystals that can be discerned with the unaided eye. Bounding grain size is on the order of 32 to 100 microns.Igneous rocks with 'exotic' composition are excluded from this concept.	Neuendorf et al. 2005	\N	phaneritic_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:phaneritic_igneous_rock	igneous	crystal	phaneritic	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+48	4.1.03.00	Granitic rock	\N	Phaneritic crystalline igneous rock consisting of quartz, alkali feldspar and/or plagioclase.Includes rocks defined modally in QAPF fields 2, 3, 4 and 5 as alkali granite, granite, granodiorite or tonalite.	LeMaitre et al. 2002	make more quantitiative.	granitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:granitic_rock	plutonic	crystal	phaneritic	acidic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+49	4.1.03.00.0	Tonalite	\N	Phaneritic crystalline rock consisting of quartz and intermediate plagioclase, usually with biotite and amphibole.Includes rocks defined modally in QAPF field 5.	LeMaitre et al. 2002	\N	tonalite	urn:cgi:classifier:CGI:SimpleLithology:200811:tonalite	plutonic	crystal	phaneritic	acidic	\N	\N	\N	\N	consolidated	5	\N	\N	\N
+50	4.1.03.00.1	Granite	\N	Phaneritic crystalline rock consisting of quartz, alkali feldspar and plagioclase (typically sodic) in variable amounts, usually with biotite and/or hornblende.Includes rocks defined modally in QAPF Field 3.	LeMaitre et al. 2002	\N	granite	urn:cgi:classifier:CGI:SimpleLithology:200811:granite	plutonic	crystal	phaneritic	acidic	\N	\N	\N	\N	consolidated	3	\N	\N	\N
+51	4.1.03.00.2	Granodiorite	\N	Phaneritic crystalline rock consisting essentially of quartz, sodic plagioclase and lesser amounts of alkali feldspar with minor hornblende and biotite.Includes rocks defined modally in QAPF field 4.	LeMaitre et al. 2002	\N	granodiorite	urn:cgi:classifier:CGI:SimpleLithology:200811:granodiorite	plutonic	crystal	phaneritic	acidic	\N	\N	\N	\N	consolidated	4	\N	\N	\N
+52	4.1.03.01	Syenitic rock	\N	Phaneritic crystalline igneous rock with M less than 90, consisting mainly of alkali feldspar and plagioclase; minor quartz or nepheline may be present, along with pyroxene, amphibole or biotite.Includes rocks classified in QAPF fields 6, 7 and 8 as syenite or monzonite.	LeMaitre et al. 2002	concept corresponds to syenitoid of LeMaitre et al 2002, p29, Fig 2.10, without denoting the categorization process.	syenitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:syenitic_rock	plutonic	crystal	phaneritic	acidic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+53	4.1.03.01.0	Monzonite	\N	Phaneritic crystalline rock containing almost equal amounts of plagioclase and alkali feldspar with minor amphibole and/or pyroxene and little or no quartz.Includes rocks defined modally in QAPF Field 8.	LeMaitre et al. 2002	\N	monzonite	urn:cgi:classifier:CGI:SimpleLithology:200811:monzonite	plutonic	crystal	phaneritic	intermediate	\N	\N	\N	\N	consolidated	8	\N	\N	\N
+54	4.1.03.01.1	Syenite	\N	Coarse grained crystalline rock consisting mainly of alkali feldspar with subordinate sodic plagioclase, biotite, pyroxene, amphibole and occasional fayalite; minor quartz or nepheline may be present.Defined modally in QAPF Field 7.	LeMaitre et al. 2002	\N	syenite	urn:cgi:classifier:CGI:SimpleLithology:200811:syenite	igneous	crystal	phaneritic	acidic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+55	4.1.03.02	Dioritic rock	\N	Phaneritic crystalline rock with M less than 90, consisting of intermediate plagioclase, commonly with hornblende and often with biotite or augite.Includes rocks defined modally in QAPF fields 9 and 10 as diorite, monzodiorite.	LeMaitre et al. 2002	\N	dioritic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:dioritic_rock	plutonic	crystal	phaneritic	intermediate	an<50, M>10	\N	\N	\N	consolidated	9,10	\N	\N	\N
+56	4.1.03.02.0	Diorite	\N	Phaneritic crystalline rock consisting of intermediate plagioclase, commonly with hornblende and often with biotite or augite; colour index M less than 90, sodic plagioclase (An0-An50).Includes rocks defined modally in QAPF field 10 as diorite.	LeMaitre et al. 2002	Initial suggestion to restrict igneous rocks to granitic, syenitic, dioritic, gabbroic etc. (a low-angle LeMaitre et al Fig.2.10) was rejected.	diorite	urn:cgi:classifier:CGI:SimpleLithology:200811:diorite	plutonic	crystal	phaneritic	intermediate	an<50, M>10	\N	\N	\N	consolidated	10	\N	\N	\N
+57	4.1.03.02.1	Monzodiorite	\N	Phaneritic crystalline igneous rock consisting of sodic plagioclase (An0 to An50), alkali feldspar, hornblende and biotite, with or without pyroxene.Includes rocks defined modally in QAPF field 9 as monzodiorite.	LeMaitre et al. 2002	Does relative abundance of monzodiorite, monzogabbro, monzonite merit inclusion of these terms in vocabulary.	monzodiorite	urn:cgi:classifier:CGI:SimpleLithology:200811:monzodiorite	plutonic	crystal	phaneritic	intermediate	\N	\N	\N	\N	consolidated	9	\N	\N	\N
+58	4.1.03.03	Gabbroic rock	\N	Phaneritic crystalline rock composed of 65 percent or more of calcic plagioclase and up to 20 percent quartz or up to 10 percent feldspathoid.Includes rocks defined modally in QAPF fields 9 and 10 as gabbro or monzogabbro and foid-bearing varieties.	LeMaitre et al. 2002	why not be specific about what calcic plagioclase means?	gabbroic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:gabbroic_rock	plutonic	crystal	phaneritic	basic	an>50, M>10	\N	\N	\N	consolidated	9,10	\N	\N	\N
+59	4.1.03.03.0	Monzogabbro	\N	Phaneritic crystalline igneous rock consisting of calcic plagioclase (An50 to An100), alkali feldspar, hornblende and biotite, with or without pyroxene.Includes rocks defined modally in QAPF field 9 as monzogabbro.	LeMaitre et al. 2002	\N	monzogabbro	urn:cgi:classifier:CGI:SimpleLithology:200811:monzogabbro	plutonic	crystal	phaneritic	mafic	\N	\N	\N	\N	\N	\N	\N	\N	\N
+60	4.1.03.03.1	Gabbro	\N	Phaneritic crystalline rock composed essentially of calcic plagioclase (An50 to An100), pyroxene and iron oxides.Includes rocks defined modally in QAPF Field 10 as gabbro.	LeMaitre et al. 2002	\N	gabbro	urn:cgi:classifier:CGI:SimpleLithology:200811:gabbro	plutonic	crystal	phaneritic	basic	an>50, M>10	\N	\N	\N	consolidated	10	\N	\N	\N
+61	4.1.03.04	Foid gabbroic rock	\N	Phaneritic crystalline rock in which M is less than 90, composed of feldspathoids as 10-60 percent of the felsic minerals, calcic plagioclase (An50-An100) and large amounts of mafic minerals.Includes rocks defined modally in QAPF field 14.	LeMaitre et al. 2002	\N	foid_gabbroic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:foid_gabbroic_rock	plutonic	crystal	phaneritic	undersaturated	an>50	\N	\N	\N	consolidated	14	\N	\N	LB definition for foid gabbro
+62	4.1.03.05	Foid dioritic rock	\N	Phaneritic crystalline rock in which M is less than 90, composed of feldspathoids as 10-60 percent of the felsic minerals, sodic plagioclase (An0-An50) and large amounts of mafic minerals.Includes rocks defined modally in QAPF field 14.	LeMaitre et al. 2002	\N	foid_dioritic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:foid_dioritic_rock	plutonic	crystal	phaneritic	undersaturated	an<50	\N	\N	\N	consolidated	14	\N	\N	LB definition for foid diorite
+63	4.1.03.06	Foid syenitic rock	\N	Leucocratic, phaneritic crystalline rock composed of feldspathoids as 10-60 percent of the felsic minerals, alkali feldspar and mafic minerals.Includes rocks defined modally in QAPF field 11.	LeMaitre et al. 2002	\N	foid_syenitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:foid_syenitic_rock	plutonic	crystal	phaneritic	undersaturated	\N	\N	\N	\N	consolidated	11	\N	\N	LB definition for foid syenite
+64	4.1.03.07	Anorthositic rock	\N	General term for a leucocratic phaneritic crystalline rock consisting essentially of plagioclase, often with small amounts of pyroxene; colour index M less than 10.Includes rocks defined modally in QAPF field 10 as anorthosite.	after LeMaitre et al. 2002	\N	anorthositic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:anorthositic_rock	plutonic	crystal	phaneritic	basic	M<=10	\N	\N	\N	consolidated	10	\N	\N	LB definition for 'anorthosite'
+65	4.1.03.08	Foidolite	\N	Phaneritic crystalline rock containing more than 60 percent feldspathoids in total light-coloured constituents.Includes rocks defined modally in QAPF field 15	LeMaitre et al. 2002	Suggestion to lump foiditic rock and foidolite (ignore grain size distinction) because they are so rare was rejected for consistency in category system.	foidolite	urn:cgi:classifier:CGI:SimpleLithology:200811:foidolite	plutonic	crystal	phaneritic	undersaturated, basic, ultrabasic	\N	\N	\N	\N	consolidated	15	\N	\N	\N
+66	4.1.03.09	Quartz rich phaneritic igneous rock	\N	Phaneritic crystalline igneous rock that contains greater than 60 percent quartz.	Gillespie and Styles 1999; LeMaitre et al. 2002	\N	quartz_rich_phaneritic_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:quartz_rich_phaneritic_igneous_rock	plutonic	crystal	phaneritic	siliceous, acidic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+67	4.1.03.10	Pegmatite	\N	Exceptionally coarse grained crystalline rock with interlocking crystals; most grains are 1cm or more diameter; composition is generally that of granite, but the term may refer to the coarse grained facies of any type of igneous rock;usually found as irregular dikes, lenses, or veins associated with plutons or batholiths.	Neuendorf et al. 2005	\N	pegmatite	urn:cgi:classifier:CGI:SimpleLithology:200811:pegmatite	plutonic	crystal	phaneritic	acidic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+68	4.1.03.11	Aplite	\N	Light coloured crystalline rock, characterized by a fine grained allotriomorphic-granular (aplitic, saccharoidal or xenomorphic) texture; typically granitic composition, consisting of quartz, K-feldspar and sodic plagioclase.	Neuendorf et al. 2005	Derive from 'crystalline' over granitic as the first part of the definition, with granitic as a typical composition, we keep the general feel of the concept (doesn't exclude other compositions), but also highlight that it is expected that the rock would be granitic.Neuendorf specifically defines the term aplitic (next entry after aplite) as applied to '... (aplites) which lack dark minerals and micas'.	aplite	urn:cgi:classifier:CGI:SimpleLithology:200811:aplite	plutonic	crystal	fine grained, phaneritic	\N	\N	aplitic	\N	homogranular	consolidated	\N	\N	\N	\N
+69	4.1.04	Porphyry	\N	Igneous rock that contains conspicuous phenocrysts in a finer grained groundmass; groundmass itself may be phaneritic or fine-grained.	LeMaitre et al. 2002	\N	porphyry	urn:cgi:classifier:CGI:SimpleLithology:200811:porphyry	igneous	crystal	\N	\N	\N	\N	\N	porphyritic	consolidated	\N	\N	\N	\N
+70	4.1.05	Doleritic rock	\N	Dark colored gabbroic (basaltic) or dioritic (andesitic) rock intermediate in grain size between basalt and gabbro and composed of plagioclase, pyroxene and opaque minerals; often with ophitic texture.Typically occurs as hypabyssal intrusions.Includes dolerite, microdiorite, diabase and microgabbro.	Neuendorf et al 2005; LeMaitre et al 2002; Gillespie and Styles, 1999	Microdiorites commonly contain significant hornblende. What exactly does intermediate in grain size mean, for use in distinguishing from basalt/andesite, gabbro/diorite?	doleritic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:doleritic_rock	intrusive	crystal	fine grained	basic, intermediate	\N	\N	\N	\N	consolidated	9,10	\N	\N	\N
+71	4.1.06	Fine grained igneous rock	\N	Aphanitic or porphyritic igneous rock composed of greater than 10 percent groundmass, in which most of the crystals cannot be distinguished with the unaided eye; grainsize is typically less than 1mm.Igneous rocks with 'exotic' composition are excluded from this concept.	Gillespie and Styles 1999; LeMaitre et al. 2002	\N	fine_grained_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:fine_grained_igneous_rock	igneous	crystal	fine grained	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+72	4.1.06.0	Andesitic rock	\N	Fine grained crystalline rock, usually porphyritic, consisting of plagioclase (frequently zoned from labradorite to oligoclase), pyroxene, hornblende and/or biotite; color index M less than 35.Includes rocks defined modally in QAPF fields 9 and 10 or chemically in TAS field O2 as andesite.Fine grained equivalent of dioritic rock.	after LeMaitre et al. 2002	\N	andesitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:andesitic_rock	volcanic	crystal	fine grained	intermediate	\N	\N	\N	\N	consolidated	9,10	O2	\N	LB definition for 'andesite'
+73	4.1.06.1	Dacitic rock	\N	Fine grained or porphyritic crystalline rock composed of quartz and sodic plagioclase with minor amounts of biotite and/or hornblende and/or pyroxene; volcanic equivalent of granodiorite and tonalite.Includes rocks defined modally in QAPF fields 4 and 5 or chemically in TAS Field O3.	LeMaitre et al. 2002	K-feldspar is an essential constituent. Mafic mineralogy is not defining. Concept corresponds to dacitoid of LeMaitre et al 2002, p39, Fig 2.9, without denoting the categorization process.	dacitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:dacitic_rock	volcanic	crystal	fine grained	intermediate	\N	\N	\N	\N	consolidated	4,5	O3	\N	\N
+74	4.1.06.2	Trachytic rock	\N	Fine-grained volcanic rock consisting of alkali feldspar and minor mafic minerals, typically amphibole or mica; typically porphyritic.Includes rocks defined modally in QAPF fields 6, 7 and 8 or chemically in TAS Field T as trachyte or latite.	LeMaitre et al. 2002	concept corresponds to trachytoid of LeMaitre et al 2002, p39, Fig 2.9, without denoting the categorization process.	trachytic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:trachytic_rock	volcanic	crystal	fine grained	intermediate, acidic	\N	\N	\N	\N	consolidated	6,7	T	\N	\N
+75	4.1.06.3	Rhyolitic rock	\N	Fine-grained igneous rock, typically porphyritic, consisting of quartz and alkali feldspar (often as phenocrysts), with minor plagioclase and biotite, in a microcrystalline, cryptocrystalline or glassy groundmass.Flow texture is common.Includes rocks defined modally in QAPF fields 2 and 3 or chemically in TAS Field R as rhyolite.	LeMaitre et al. 2002	Definition appears to be for pheno-rhyolite, not consistent with concept I thought we wanted which is rhyolitoid of LeMaitre et al 2002 (p. 39, fig 2.9) without denotation of categorization process.	rhyolitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:rhyolitic_rock	volcanic	crystal	fine grained	acidic	\N	\N	\N	\N	consolidated	3	R	\N	\N
+76	4.1.06.4	Phonolitic rock	\N	Fine grained igneous rock containing feldspathoids and in which alkali feldspar is thought to be more abundant than plagioclase.Includes rocks defined modally in QAPF fields 11 and 12, and TAS field Ph.	LeMaitre et al. 2002	Category subsumes phonolite and tephritic phonolite. The 'thought to be' has to do with the metadata on the categorization process-- Term doesn't actually appear in LeMaitre et al.. Concept corresponds to phonolitoid field (LeMaitre et al., p. 39, Fig. 2.19) without denoting the categorization process, using the allowed convention of appending '-ic rock' to all the field classification terms in place of '-oid'.LeMaitre allows this where the latter is 'felt to be linguistically awkward' (p.39).In my humble opinion, they're all pretty awkward!	phonolitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:phonolitic_rock	volcanic	crystal	fine grained	undersaturated, basic, intermediate	\N	\N	\N	\N	consolidated	11,12	Ph	\N	\N
+77	4.1.06.5	Basaltic rock	\N	Fine-grained or porphyritic igneous rock with less than 20 percent quartz, and less than 10 percent feldspathoid minerals, in which the ratio of plagioclase to alkali feldspar is greater than 66 percent, and the color index is greater than 35. Typically composed of calcic plagioclase and clinopyroxene; phenocrysts typically include one or more of calcic plagioclase, clinopyroxene, orthopyroxene, and olivine.Includes rocks defined modally in QAPF fields 9 and 10 or chemically in TAS field B as basalt.	after LeMaitre et al. 2002	\N	basaltic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:basaltic_rock	volcanic	crystal	fine grained	basic	basaltic	\N	\N	\N	consolidated	9,10	B	\N	LB definition is for 'basalt'
+78	4.1.06.6	Tephritic rock	\N	Fine grained crystalline igneous rock containing essential feldspathoids and in which plagioclase is more abundant than alkali feldspar.Includes rocks classified in QAPF field 14 or chemically in TAS field U1 as basanite or tephrite.	LeMaitre et al. 2002	concept corresponds to tephritoid of LeMaitre et al 2002, p39, Fig 2.9, without denoting the categorization process.	tephritic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:tephritic_rock	volcanic	crystal	fine grained	undersaturated, ultrabasic, basic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+79	4.1.06.8	Foiditic rock	\N	Fine grained crystalline rock containing more than 60 percent feldspathoids in total light-coloured constituents.Includes rocks defined modally in QAPF field 15 or chemically in TAS field F.	LeMaitre et al. 2002	\N	foiditic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:foiditic_rock	volcanic	crystal	\N	undersaturated, basic, ultrabasic	\N	\N	\N	\N	consolidated	15	F	\N	LB definition for foidite
+80	4.1.07	Acidic igneous rock	\N	Igneous rock with more than 63 percent SiO2.	after LeMaitre et al. 2002	\N	acidic_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:acidic_igneous_rock	igneous	\N	\N	acidic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+81	4.1.08	Intermediate composition igneous rock	\N	Igneous rock with between 52 and 63 percent SiO2.	after LeMaitre et al. 2002	\N	intermediate_composition_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:intermediate_composition_igneous_rock	igneous	\N	\N	intermediate	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+82	4.1.09	Basic igneous rock	\N	Igneous rock with between 45 and 52 percent SiO2.	after LeMaitre et al. 2002	\N	basic_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:basic_igneous_rock	igneous	\N	\N	basic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+83	4.1.10	Ultrabasic igneous rock	\N	Igneous rock with less than 45 percent SiO2.	after LeMaitre et al. 2002	\N	ultrabasic_igneous_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:ultrabasic_igneous_rock	igneous	crystal	\N	ultrabasic	ultramafic	\N	\N	\N	consolidated	\N	\N	\N	\N
+84	4.1.10.0	Hornblendite	\N	Ultramafic rock that consists of greater than 40 percent hornblende plus pyroxene and has a hornblende to pyroxene ratio greater than 1. Includes olivine hornblendite, olivine-pyroxene hornblendite, pyroxene hornblendite, and hornblendite.	LeMaitre et al. 2002	Use 3 names for ultramafic rocks in olivine-pyroxene (clino and ortho)-hornblende triangles--peridotite, hornblendite, and pyroxenite, corresponding to broad categories along right side of LeMaitre et al. 2002 fig 2.9 p. 28. Note that this allows a rock with as little as about 28 percent (30 percent of 90 percent) hornblende to be a hornblendite (.1 non mafic, .35 olivine, .28 hbld, .27 pyx).	hornblendite	urn:cgi:classifier:CGI:SimpleLithology:200811:hornblendite	plutonic	crystal	phaneritic	ultrabasic	ultramafic	\N	\N	\N	consolidated	\N	\N	\N	Also used as a term for the more specific concept of a rock with >90% hornblende.I think we want the generic definition for our current purposes.
+85	4.1.10.1	Pyroxenite	\N	Ultramafic phaneritic igneous rock composed almost entirely of one or more pyroxenes and occasionally biotite, hornblende and olivine. Includes rocks defined modally in the ultramafic rock classification as olivine pyroxenite, olivine-hornblende pyroxenite, pyroxenite, orthopyroxenite, clinopyroxenite and websterite.	LeMaitre et al. 2002	LeMaitre et al 2002 definition in glossary refers to Fig 2.9 on p. 28.	pyroxenite	urn:cgi:classifier:CGI:SimpleLithology:200811:pyroxenite	plutonic	crystal	phaneritic	ultrabasic	ultramafic	\N	\N	\N	consolidated	\N	\N	\N	\N
+86	4.1.10.2	Komatiitic rock	\N	Ultramafic volcanic rock, typically with spinifex texture of intergrown skeletal and bladed olivine and pyroxene crystals set in abundant glass.Includes picrite, komatiite and meimechite.	LeMaitre et al. 2002	\N	komatiitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:komatiitic_rock	volcanic	crystal	\N	ultrabasic	\N	\N	\N	porphyritic	consolidated	\N	\N	\N	\N
+87	4.1.10.3	Peridotite	\N	Ultramafic rock consisting of more than 40 percent (by volume) olivine with pyroxene and/or amphibole and little or no feldspar.Commonly altered to serpentinite.Includes rocks defined modally in the ultramafic rock classification as dunite, harzburgite, lherzolite, wehrlite, olivinite, pyroxene peridotite, pyroxene hornblende peridotite or hornblende peridotite.	LeMaitre et al. 2002	olivine ratio is defined in triangles with pyroxene and hornblende. LeMaitre et al is not clear on whether Olivine is 40% of rock (text, p28), or 40% of Ol-clinopyroxene-orthopyroxene-hornblende (Fig. 2.9).Take the text at face value.If rock contains more than 10 percent modal melilite or kalsilite it is an 'exotic alkalic rock'.	peridotite	urn:cgi:classifier:CGI:SimpleLithology:200811:peridotite	plutonic	crystal	phaneritic	ultrabasic	ultramafic	\N	\N	\N	consolidated	\N	\N	\N	\N
+88	4.2..	Composite genesis rock	\N	Rock formed by geological modification of pre-existing rocks outside the realm of igneous and sedimentary processes. Includes rocks formed by impact metamorphism, standard dynamothermal metamorphism, brittle deformation, weathering, metasomatism and hydrothermal alteration (diagenesis is a sedimentary process in this context).	SLTTm 2004	\N	composite_genesis_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:composite_genesis_rock	composite genesis	\N	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+89	4.2.0	Impact metamorphic rock	\N	Rock that contains features indicative of shock metamorphism, such as microscopic planar deformation features within grains or shatter cones.Includes breccias and melt rocks.	Stöffler and Grieve 2007; Jackson 1997	\N	impact_metamorphic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:impact_metamorphic_rock	impact	\N	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+90	4.2.1	Metamorphic rock	\N	Rock formed by solid-state mineralogical, chemical and/or structural changes to a pre-existing rock, in response to marked changes in temperature, pressure, shearing stress and chemical environment; generally at depth in the crust.	Jackson 1997	\N	metamorphic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:metamorphic_rock	metamorphic	crystal	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+91	4.2.1.0	Migmatite	\N	Silicate metamorphic rock that is pervasively heterogeneous on a meso- to megascopic scale that typically consists of darker and lighter parts; the darker parts usually exhibit features of metamorphic rocks whereas the lighter parts are of igneous-looking appearance.	after IUGS SCMR 2007 (http://www.bgs.ac.uk/SCMR/)	\N	migmatite	urn:cgi:classifier:CGI:SimpleLithology:200811:migmatite	metamorphic	crystal	phaneritic	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+92	4.2.1.1	Hornfels	\N	Granofels composed of a mosaic of equidimensional grains in a characteristically granoblastic or decussate matrix; porphyroblasts or relict phenocrysts may be present.Typically formed by contact metamorphism.	IUGS SCMR 2007 (http://www.bgs.ac.uk/SCMR/)	SCMR state hornfels is a specific name that may be applied to granofels. Draft vocabulary proposal that hornfels is fine-grained equivalent of granofels was rejected, this essentially ends up denoting that hornfels is 'granofels with contact metamorphic origin'.	hornfels	urn:cgi:classifier:CGI:SimpleLithology:200811:hornfels	contact metamorphic	crystal	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+93	4.2.1.2	Granofels	\N	Phaneritic metamorphic rock with granoblastic fabric and very little or no foliation (less than 10 percent of the mineral grains in the rock are elements in a planar or linear fabric).	SLTTm 2004	\N	granofels	urn:cgi:classifier:CGI:SimpleLithology:200811:granofels	metamorphic	crystal	phaneritic	\N	\N	massive	\N	\N	consolidated	\N	\N	\N	\N
+94	4.2.1.3	Foliated metamorphic rock	\N	Metamorphic rock in which 10 percent or more of the contained mineral grains are elements in a planar or linear fabric.Cataclastic or glassy character precludes classification with this concept.	based on NADM SLTT metamorphic	\N	foliated_metamorphic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:foliated_metamorphic_rock	metamorphic	crystal	\N	\N	\N	foliated	\N	\N	consolidated	\N	\N	\N	\N
+95	4.2.1.3.0	Schist	\N	Foliated phaneritic metamorphic rock with well developed, continuous schistosity (greater than 50 percent of mineral grains with a tabular, lamellar, or prismatic crystallographic habit that are oriented in a continuous planar or linear fabric).	SLTTm 2004; Neuendorf et al. 2005	\N	schist	urn:cgi:classifier:CGI:SimpleLithology:200811:schist	metamorphic	crystal	phaneritic	\N	pelitic, semipelitic	foliated	\N	\N	consolidated	\N	\N	\N	\N
+96	4.2.1.3.1	Slate	\N	Compact, fine grained rock with an average grain size less than 0.032 millimeter and a well developed schistosity (slaty cleavage), and hence can be split into slabs or thin plates.	NADM metamorphic rock vocabulary SLTTm1.0; Neuendorf et al. 2005	\N	slate	urn:cgi:classifier:CGI:SimpleLithology:200811:slate	metamorphic	crystal	fine grained	\N	pelitic	foliated	\N	\N	consolidated	\N	\N	\N	\N
+97	4.2.1.3.2	Phyllite	\N	Rock with a well developed, continuous schistosity, an average grain size between 0.1 and 0.5 millimeters, and a silvery sheen on cleavage surfaces. Individual phyllosilicate grains are barely visible with the unaided eye.	IUGS SCMR 2007 (http://www.bgs.ac.uk/SCMR/)	\N	phyllite	urn:cgi:classifier:CGI:SimpleLithology:200811:phyllite	metamorphic	crystal	fine grained	\N	pelitic	foliated	\N	\N	consolidated	\N	\N	\N	\N
+98	4.2.1.3.3	Mylonitic rock	\N	Metamorphic rock characterised by a foliation resulting from tectonic grain size reduction, in which more than 10 percent of the rock volume has undergone grain size reduction.Includes protomylonite, mylonite, ultramylonite, phyllonite and blastomylonite.	Marshak & Mitra 1988	subdivided into proto-, ultra- and mylonite.Removed blastomylonite as a concept, though, but left it as part of the definition here so it's not completely excluded.	mylonitic_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:mylonitic_rock	deformation	crystal	fine grained, phaneritic	\N	\N	foliated	\N	\N	consolidated	\N	\N	\N	\N
+99	4.2.1.3.3.0	Phyllonite	\N	Mylonitic rock composed largely of fine-grained mica that imparts a sheen to foliation surfaces; may have flaser lamination, isoclinal folding, and deformed veins, which indicate significant shearing.Macroscopically resembles phyllite, but formed by mechanical degradation of initially coarser rock.	NADM metamorphic rock vocabulary SLTTm1.0; Marshak & Mitra 1988	\N	phyllonite	urn:cgi:classifier:CGI:SimpleLithology:200811:phyllonite	deformation	crystal	fine grained	\N	\N	foliated	\N	\N	consolidated	\N	\N	\N	\N
+100	4.2.1.3.4	Gneiss	\N	Foliated metamorphic rock with bands or lenticles rich in granular minerals alternating with bands or lenticles rich in minerals with a flaky or elongate prismatic habit.Mylonitic foliation or well developed, continuous schistosity (greater than 50 percent of the rock consists of grains participate in a planar or linear fabric) precludes classification with this concept.	Neuendorf et al. 2005	SCMR definition is not sufficient to distinguish schist from gneiss. Have to distinguish from protomylonite.Most definitions of gneissstate what it isn't (with a loose definition - at best - of the concept space), rather than provide an acceptable definitive statement of what it is. Neuendorf et al seem to give a more affirmative statement, but I'm still not sure I'm completely satisfied yet.	gneiss	urn:cgi:classifier:CGI:SimpleLithology:200811:gneiss	metamorphic	crystal	phaneritic	\N	\N	foliated	\N	\N	consolidated	\N	\N	\N	\N
+101	4.2.1.4	Quartzite	\N	Metamorphic rock consisting of greater than or equal to 75 percent quartz; typically granoblastic texture.	after Neuendorf et al. 2005	\N	quartzite	urn:cgi:classifier:CGI:SimpleLithology:200811:quartzite	metamorphic	crystal	phaneritic	siliceous	quartzose	\N	\N	\N	consolidated	\N	\N	\N	\N
+102	4.2.1.5	Serpentinite	\N	Rock consisting of more than 75 percent serpentine-group minerals, eg. antigorite, chrysotile or lizardite; accessory chlorite, talc and magnetite may be present; derived from hydration of ferromagnesian silicate minerals such as olivine and pyroxene.	Neuendorf et al. 2005	\N	serpentinite	urn:cgi:classifier:CGI:SimpleLithology:200811:serpentinite	metamorphic	crystal	\N	ultrabasic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+103	4.2.1.6	Eclogite	\N	Metamorphic rock composed of 75 percent or more (by volume) omphacite and garnet, both of which are present as major constituents, the amount of neither of them being higher than 75 percent (by volume); the presence of plagioclase precludes classification as an eclogite.	IUGS SCMR 2007 (http://www.bgs.ac.uk/SCMR/)	clarify what 'present as major constituent' means.	eclogite	urn:cgi:classifier:CGI:SimpleLithology:200811:eclogite	metamorphic	crystal	phaneritic	\N	eclogitic	\N	\N	\N	consolidated	\N	\N	\N	\N
+104	4.2.1.7	Amphibolite	\N	Metamorphic rock mainly consisting of green, brown or black amphibole and plagioclase (including albite), which combined form 75 percent or more of the rock, and both of which are present as major constituents.The amphibole constitutes 50 percent or more of the total mafic constituents and is present in an amount of 30 percent or more; other common minerals include quartz, clinopyroxene, garnet, epidote-group minerals, biotite, titanite and scapolite.	Coutinho et al. 2007, IUGS SCMR chapter 8 (http://www.bgs.ac.uk/SCMR/)	I guess we're stuck with the 'green, brown, or black amphibole', but does'dark-colored amphibole' capture the concept better.	amphibolite	urn:cgi:classifier:CGI:SimpleLithology:200811:amphibolite	metamorphic	crystal	phaneritic	\N	amphibolitic	\N	\N	\N	consolidated	\N	\N	\N	\N
+105	4.2.1.8	Marble	\N	Metamorphic rock consisting of greater than 75 percent fine- to coarse-grained recrystallized calcite and/or dolomite; usually with a granoblastic, saccharoidal texture.	IUGS SCMR 2007 (http://www.bgs.ac.uk/SCMR/),SLTTm1.0 2004	\N	marble	urn:cgi:classifier:CGI:SimpleLithology:200811:marble	metamorphic	crystal	fine grained, phaneritic	carbonate	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+106	4.3..	Sedimentary rock	\N	Rock formed by accumulation and cementation of solid fragmental material deposited by air, water or ice, or as a result of other natural agents, such as precipitation from solution, the accumulation of organic material, or from biogenic processes, including secretion by organisms.Includes epiclastic deposits.	SLTTs 2004	\N	sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:sedimentary_rock	sedimentary	grain, crystal	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+107	4.3.0	Clastic sedimentary rock	\N	Sedimentary rock in which at least 50 percent of the constituent particles were derived from erosion, weathering, or mass-wasting of pre-existing earth materials, and transported to the place of deposition by mechanical agents such as water, wind, ice and gravity.	SLTTs, 2004; Neuendorf et al., 2005	see clastic sedimentary material comment.	clastic_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:clastic_sedimentary_rock	sedimentary	grain	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+108	4.3.0.0	Mudstone	\N	Clastic sedimentary rock consisting of less than 30 percent gravel-size (2 mm) particles and with a mud to sand ratio greater than 1. Clasts may be of any composition or origin.	Pettijohn et al. 1987 referenced in Hallsworth & Knox 1999; extrapolated from Folk, 1954, Figure 1a	equivalent to mudrock category from SLTTs.	mudstone	urn:cgi:classifier:CGI:SimpleLithology:200811:mudstone	sedimentary	grain	aphanitic	\N	pelitic	\N	\N	\N	consolidated	\N	\N	\N	\N
+109	4.3.0.0.0	Shale	\N	Laminated mudstone that will part or break along thin, closely spaced layers parallel to stratification.	NADM SLTT sedimentary; Neuendorf et al. 2005	\N	shale	urn:cgi:classifier:CGI:SimpleLithology:200811:shale	sedimentary	grain	aphanitic	\N	pelitic	foliated	\N	\N	consolidated	\N	\N	\N	\N
+110	4.3.0.1	Sandstone	\N	Clastic sedimentary rock in which less than 30 percent of particles are greater than 2 mm in diameter (gravel) and the sand to mud ratio is at least 1.	SLTTs 2004; Neuendorf et al. 2005; particle size from Wentworth grade scale	concept corresponds to SLTTs sandy rock (basically Folk).	sandstone	urn:cgi:classifier:CGI:SimpleLithology:200811:sandstone	sedimentary	grain	fine grained or phaneritic	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+111	4.3.0.2	Conglomerate	\N	Coarse grained sedimentary rock composed of at least 30 percent rounded to subangular fragments larger than 2 mm in diameter; typically contains finer grained material in interstices between larger fragments.	Neuendorf et al. 2005; SLTTs 2004	\N	conglomerate	urn:cgi:classifier:CGI:SimpleLithology:200811:conglomerate	sedimentary	grain	phaneritic	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+112	4.3.0.3	Wackestone	Clastic wackestone	Sandstone that contains between 15 and 75 percent matrix of unspecified origin.	this vocabulary	Note potential confusion between carbonate petrology usageand clastic sedimentary petrology usage of term wackestone. Maybe this concept should be named 'clastic wackestone'. Since there is quite a bit of contention about the origin of the matrix in these rocks (see Dickinson, 1970, J Sed Pet v40 p695-707), the criteria of 'mud supported depositional fabric' is virtually impossible to apply. Simply '15-75% matrix of unspecified origin' is sufficient in my opinion (for the 'clastic wackestone'). Note also that we need criteria to distinguish clastic wackestone from diamictite. Suggestions?	wackestone	urn:cgi:classifier:CGI:SimpleLithology:200811:wackestone	\N	\N	\N	\N	\N	matrix 'supported'	\N	\N	consolidated	\N	\N	\N	\N
+113	4.3.0.4	Diamictite	\N	Unsorted or poorly sorted, clastic sedimentary rock with a wide range of particle sizes such that it cannot be assigned to any other class.	Fairbridge and Bourgeois 1978	Pettijohn (1975, p. 164) diamictite defines criteria as poor sorting and matrix supported clasts. Hallsworth and Knox (1999) state that strict descriptive definition relates to range\nof particle size and not to relative abundance of any or all\nsize classes and reference Fairbridge and Bourgeois, 1978. Need criteria to distinguish conglomerate, diamictite, and wackestone.	diamictite	urn:cgi:classifier:CGI:SimpleLithology:200811:diamictite	sedimentary	grain	\N	\N	\N	\N	\N	no sorting	consolidated	\N	\N	\N	FAIRBRIDGE, R W, and BOURGEOIS, J. 1978. The encyclopaedia of sedimentology. Encyclopaedia of Earth Sciences, Vol. 6.
+114	4.3.1	Carbonate sedimentary rock	\N	Sedimentary rock in which at least 50 percent of the primary and/or recrystallized constituents are composed of one (or more) of the carbonate minerals calcite, aragonite and dolomite, in particles of intrabasinal origin.	SLTTs 2004	see carbonate sediment comments	carbonate_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:carbonate_sedimentary_rock	sedimentary	crystal, grain	\N	carbonate	\N	\N	\N	\N	consolidated	\N	\N	\N	why is this rock defined by weight percent and not volume like most of the others?
+115	4.3.1.0	Calcareous carbonate sedimentary rock	\N	Carbonate sedimentary rock with a calcite (plus aragonite) to dolomite ratio greater than 1 to 1.Includes limestone and dolomitic limestone.	SLTTs 2004; Hallsworth & Knox 1999	inclusion of a narrowly defined limestone category (calcite:dolomote greater than 9 to1) leaves gap in system of categories, with nothing between carbonate sedimentary rock and limestone--dolomitic limestones and impure limestones have no containing category except carbonate sedimentary rock. I don't think limestone will be so much more abundant than the dolomitic or impure limestones that we can ignore the others. Hallsworth and Knox usage corresponds to SLTTs (2004) calcitic (or aragonitic) sedimentary rock, concept is named calcareous carbonate sedimentary rock here.	calcareous_carbonate_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:calcareous_carbonate_sedimentary_rock	sedimentary	crystal, grain	\N	calcareous carbonate	\N	\N	\N	\N	consolidated	\N	\N	\N	Leighton, M.W., and Pendexter, C., 1962, Carbonate rock types, , in Ham, W.E., ed., Classification of carbonate rocks: American Association of Petroleum Geologists, Memoir 1, p. 33-61.
+116	4.3.1.1	Dolomitic or magnesian sedimentary rock	\N	Carbonate sedimentary rock with a ratio of magnesium carbonate to calcite (plus aragonite) greater than 1 to 1.Includes dolostone, lime dolostone and magnesite-stone.	after SLTTs 2004, Hallsworth and Knox 1999	\N	dolomitic_or_magnesian_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:dolomitic_or_magnesian_sedimentary_rock	sedimentary	\N	\N	carbonate, magnesian	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+117	4.3.1.3	Carbonate mudstone	\N	Carbonate sedimentary rock with matrix-supported fabric, composed of more than 75 percent mud-sized grains (maximum diameter less than 32 microns).The original depositional texture is preserved.	Hallsworth & Knox 1999; SLTTs, 2004	Preservation of depositional texture is part of Hallsworth & Knox definition; concept denotes that grain size has to do with original carbonate sediment particle size (Folk, 1962, Dunham, 1962). Folk and Dunham both use 10% as cut off for micrite (Folk) or mudstone (Dunham), Hallsworth & Knox raised this to 25% for internal consistency in their system. Dunham, Folk, SLTTs all use 20 micron as cut off for 'mud', Hallsworth and Knox use 32 mircon; determination of such grain size distinctions (on the order or less than thickness of a thin section) is difficult at best, favour the higher number to be more inclusive.	carbonate_mudstone	urn:cgi:classifier:CGI:SimpleLithology:200811:carbonate_mudstone	sedimentary	grain	aphanitic, fine grained	carbonate	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+118	4.3.1.4	Carbonate wackestone	\N	Carbonate sedimentary rock with discernible mud supported depositional texture and containing greater than 10 percent grains.	Dunham 1962	0	carbonate_wackestone	urn:cgi:classifier:CGI:SimpleLithology:200811:carbonate_wackestone	sedimentary	grain	fine grained and phaneritic	carbonate	\N	matrix supported	\N	\N	consolidated	\N	\N	\N	\N
+119	4.3.1.5	Packstone	\N	Carbonate sedimentary rock with discernible grain supported depositional texture, containing greater than 10 percent grains; intergranular spaces are filled by matrix.	Hallsworth & Knox 1999	\N	packstone	urn:cgi:classifier:CGI:SimpleLithology:200811:packstone	sedimentary	grain	fine grained and phaneritic	carbonate	\N	grain supported	\N	\N	consolidated	\N	\N	\N	\N
+120	4.3.1.6	Grainstone	\N	Carbonate sedimentary rock with recognizable depositional fabric that is grain-supported; contains little or no mud matrix.	Dunham 1962	\N	grainstone	urn:cgi:classifier:CGI:SimpleLithology:200811:grainstone	sedimentary	grain	fine grained or phaneritic	carbonate	\N	grain supported	\N	\N	consolidated	\N	\N	\N	\N
+121	4.3.1.7	Boundstone	\N	Sedimentary carbonate rock with preserved biogenic texture, whose original components were bound and encrusted together during deposition by the action of plants and animals during deposition, and remained substantially in the position of growth.	Hallsworth and Knox 1999; SLTTs 2004	Hallsworth and Knox divide carbonate sediments into those with depositional, biogenic, or diagenetic textures. Criteria for distinguishing depositional and biogenic are not explicitly outlined.LB: Table 3 on p.10 states that both are formed by in-situ organisms; if the organisms are 'encrusting binding organisms' then the resultant rock is a boundstone, if'rigid organisms dominant' it's a framestone.I don't understand it, but I suspect that's my lack of knowledge rather than any deficiency on their part (and as such, I'd prefer to keep the categories separate rather than have a bunch of irate carbonate sedimentologists after my head!).	boundstone	urn:cgi:classifier:CGI:SimpleLithology:200811:boundstone	biogenic	crystal or grain	\N	carbonate	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+122	4.3.1.8	Framestone	\N	Carbonate reef rock consisting of a rigid framework of colonies, shells or skeletons, with internal cavities filled with fine sediment; usually created through the activities of colonial organisms.	Hallsworth & Knox 1999; SLTTs, 2004, Table 15-3-1	suggestion to lump boundstone and framestone into a single category (biogenic in-situ carbonate sedimentary rock) was rejected.	framestone	urn:cgi:classifier:CGI:SimpleLithology:200811:framestone	biogenic	crystal or grain	\N	carbonate	\N	biogenic framework	\N	\N	consolidated	\N	\N	\N	\N
+123	4.3.1.9	Crystalline carbonate	\N	Carbonate rock of indeterminate mineralogy in which diagenetic processes have obliterated any original depositional texture.	SLTTs 2004	\N	crystalline_carbonate	urn:cgi:classifier:CGI:SimpleLithology:200811:crystalline_carbonate	sedimentary	crystal	\N	carbonate	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+124	4.3.2	Organic rich sedimentary rock	\N	Sedimentary rock with color, composition, texture and apparent density indicating greater than 50 percent organic content by weight on a moisture-free basis.	SLTTs 2004	\N	organic_rich_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:organic_rich_sedimentary_rock	sedimentary	\N	\N	carbonaceous	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+125	4.3.2.0	Coal	\N	Hard, black, organic rich sedimentary rock that yields greater than 8,300 Btu on a moist, mineral-matter-free basis, or contains greater than 69 percent fixed carbon on a dry, mineral-matter-free basis; formed from the compaction or induration of variously altered plant remains similar to those of peaty deposits.	ASTM 2002; Schopf 1956	\N	coal	urn:cgi:classifier:CGI:SimpleLithology:200811:coal	sedimentary	grain, amorphous	\N	carbonaceous	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+126	4.3.3	Non-clastic siliceous sedimentary rock	\N	Sedimentary rock that consists of at least 50 percent silicate mineral material, deposited directly by chemical or biological processes at the depositional surface, or in particles formed by chemical or biological processes within the basin of deposition.	SLTTs 2004	\N	non_clastic_siliceous_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:non_clastic_siliceous_sedimentary_rock	sedimentary	\N	\N	siliceous	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+127	4.3.3.0	Biogenic silica sedimentary rock	\N	Sedimentary rock that consists of at least 50 percent silicate mineral material, deposited directly by biological processes at the depositional surface, or in particles formed by biological processes within the basin of deposition.	based on NADM SLTT sedimentary; Hallsworth & Knox 1999	\N	biogenic_silica_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:biogenic_silica_sedimentary_rock	biogenic	grain	\N	siliceous	\N	\N	\N	\N	consolidated	\N	\N	\N	what does 'at the depositional surface' mean? Unclear
+128	4.3.4	Iron rich sedimentary rock	\N	Sedimentary rock that consists of at least 50 percent iron-bearing minerals (hematite, magnetite, limonite-group, siderite, iron-sulfides), as determined by hand-lens or petrographic analysis. Corresponds to a rock typically containing 15 percent iron by weight.	Hallsworth and Knox 1999; SLTTs 2004	\N	iron_rich_sedimentary_rock	urn:cgi:classifier:CGI:SimpleLithology:200811:iron_rich_sedimentary_rock	sedimentary	\N	\N	iron rich	\N	\N	\N	\N	consolidated	\N	\N	\N	why weight and not volume?
+129	4.3.5	Phosphorite	\N	Sedimentary rock in which at least 50 percent of the primary or recrystallized constituents are phosphate minerals.Most commonly occurs as a bedded primary or reworked secondary marine rock, composed of microcrystalline carbonate fluorapatite in the form of lamina, pellets, oolites and nodules, and skeletal, shell and bone fragments.	Hallsworth&Knox 1999, Jackson 1997	\N	phosphorite	urn:cgi:classifier:CGI:SimpleLithology:200811:phosphorite	sedimentary	grain	\N	phosphatic	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+130	5.0..	Acidic igneous material	\N	Igneous material with more than 63 percent SiO2.	after LeMaitre et al. 2002	\N	acidic_igneous_material	urn:cgi:classifier:CGI:SimpleLithology:200811:acidic_igneous_material	igneous	\N	\N	acidic	\N	\N	\N	\N	\N	\N	\N	\N	\N
+131	5..	Igneous material	\N	Earth material formed as a result of igneous processes, eg. intrusion and cooling of magma in the crust, volcanic eruption.	This vocabulary	\N	igneous_material	urn:cgi:classifier:CGI:SimpleLithology:200811:igneous_material	igneous	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+132	5.2..	Basic igneous material	\N	Igneous material with between 45 and 52 percent SiO2.	after LeMaitre et al. 2002	\N	basic_igneous_material	urn:cgi:classifier:CGI:SimpleLithology:200811:basic_igneous_material	igneous	\N	\N	basic	\N	\N	\N	\N	\N	\N	\N	\N	\N
+133	5.1..	Intermediate composition igneous material	\N	Igneous material with between 52 and 63 percent SiO2.	after LeMaitre et al. 2002	\N	intermediate_composition_igneous_material	urn:cgi:classifier:CGI:SimpleLithology:200811:intermediate_composition_igneous_material	igneous	\N	\N	intermediate	\N	\N	\N	\N	\N	\N	\N	\N	\N
+134	5.3..	Fragmental igneous material	\N	Igneous material of unspecified consolidation state in which greater than 75 percent of the rock consists of fragments produced as a result of igneous rock-forming process.	CGI concepts task group	Probably need some example text to clarify that category includes pyroclastic, autoclastic, and intrusion-related breccias.	fragmental_igneous_material	urn:cgi:classifier:CGI:SimpleLithology:200811:fragmental_igneous_material	igneous	granular	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+135	5.3.0	Pyroclastic material	\N	Fragmental igneous material that consists of more than 75 percent of particles formed by disruption as a direct result of volcanic action.	LeMaitre et al. 2002	intrusive breccias are left in the cold (would have to be placed in breccia category). LeMaitre et al 2002 p. 7 says pyroclastic deposit must contain more than 75% by volume of pyroclasts. Distinction between particle 'formed by disruption as a direct result of volcanic action' and particles 'deposited as direct result of volcanic process' ends up in long arguments in proximal tuffaceous deposits that are often slightly reworked (rain during/ soon after eruption, eruption ->snowmelt-> fluvial transport of eruption products), which is then required to decide if something is sedimentary or volcanic.... We can't settle the issue, but need to be considered and consistent in our definitions.	pyroclastic_material	urn:cgi:classifier:CGI:SimpleLithology:200811:pyroclastic_material	pyroclastic	grain	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+136	6.0..	Clastic sedimentary material	\N	Sedimentary material of unspecified consolidation state in which at least 50 percent of the constituent particles were derived from erosion, weathering, or mass-wasting of pre-existing earth materials, and transported to the place of deposition by mechanical agents such as water, wind, ice and gravity.	SLTTs, 2004; Neuendorf et al., 2005	50 percent of the particles? That implies counting the particles. 50 percent of the material by weight or volume is clearer and probably is actually what we want. For sediment, sieve analysis usually produces grain size fraction by weight; for rock, point counting would yield grain size fractions by volume....	clastic_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811:clastic_sedimentary_material	sedimentary	grain	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+137	6..	Sedimentary material	\N	Material formed by accumulation of solid fragmental material deposited by air, water or ice, or material that accumulated by other natural agents such as chemical precipitation from solution or secretion by organisms.Includes both sediment and sedimentary rock.Includes epiclastic deposits.	SLTTs 2004	\N	sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811:sedimentary_material	sedimentary	grain, crystal	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+138	6.1..	Organic rich sedimentary material	\N	Sedimentary material in which50 percent or more of the primary sedimentary material is organic carbon.	SLTTs 2004	\N	organic_rich_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811:organic_rich_sedimentary_material	sedimentary	\N	\N	carbonaceous	\N	\N	\N	\N	\N	\N	\N	\N	\N
+139	6.2..	Phosphate rich sedimentary material	\N	Sedimentary material in which at least 50 percent of the primary and/or recrystallized constituents are phosphate minerals.	SLTTs 2004	\N	phosphate_rich_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811:phosphate_rich_sedimentary_material	sedimentary	grain	phosphatic	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+140	6.3..	Iron rich sedimentary material	\N	Sedimentary material of unspecified consolidation state that consists of at least 50 percent iron-bearing minerals (hematite, magnetite, limonite-group, siderite, iron-sulfides), as determined by hand-lens or petrographic analysis. Corresponds to a rock typically containing 15 percent iron by weight.	SLTTs 2004	\N	iron_rich_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811:iron_rich_sedimentary_material	sedimentary	\N	\N	iron rich	\N	\N	\N	\N	\N	\N	\N	\N	\N
+141	6.4..	Carbonate sedimentary material	\N	Sedimentary material in which at least 50 percent of the primary and/or recrystallized constituents are composed of one (or more) of the carbonate minerals calcite, aragonite and dolomite, in particles of intrabasinal origin.	SLTTs 2004	see carbonate sediment comments	carbonate_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811:carbonate_sedimentary_material	sedimentary	\N	\N	carbonate	\N	\N	\N	\N	\N	\N	\N	\N	\N
+142	6.4.0	Calcareous carbonate sedimentary material	\N	Carbonate sedimentary material of unspecified consolidation state with a calcite (plus aragonite) to dolomite ratio greater than 1 to 1. Includes lime-sediments, limestone and dolomitic limestone.	after Hallsworth & Knox 1999	Added for completeness	calcareous_carbonate_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811:calcareous_carbonate_sedimentary_material	sedimentary	grain	\N	calcareous carbonate	\N	\N	\N	\N	\N	\N	\N	\N	\N
+143	6.4.1	Dolomitic or magnesian sedimentary material	\N	Carbonate sedimentary material of unspecified consolidation degree with a ratio of magnesium carbonate to calcite (plus aragonite) greater than 1 to 1.Includes dolomite sediment, dolostone, lime dolostone and magnesite-stone.	after SLTTs 2004, Hallsworth and Knox 1999	\N	dolomitic_or_magnesian_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811:dolomitic_or_magnesian_sedimentary_material	sedimentary	\N	\N	carbonate, magnesian	\N	\N	\N	\N	\N	\N	\N	\N	\N
+144	6.5..	Non-clastic siliceous sedimentary material	\N	Sedimentary material that consists of at least 50 percent silicate mineral material, deposited directly by chemical or biological processes at the depositional surface, or in particles formed by chemical or biological processes within the basin of deposition.	SLTTs 2004	\N	non_clastic_siliceous_sedimentary_material	urn:cgi:classifier:CGI:SimpleLithology:200811:non_clastic_siliceous_sedimentary_material	sedimentary	\N	\N	siliceous	\N	\N	\N	\N	\N	\N	\N	\N	\N
+145	6.6..	Evaporite	\N	Nonclastic sedimentary rock composed of at least 50 percent non-carbonate salts, including chloride, sulfate or borate minerals; formed through precipitation of mineral salts from a saline solution (non-carbonate salt rock).	Jackson 1997; SLTTs 2004	precipitation doesn't have to be evaporative--could be by any mechanism.	evaporite	urn:cgi:classifier:CGI:SimpleLithology:200811:evaporite	sedimentary	crystal	\N	\N	\N	\N	\N	\N	consolidated	\N	\N	\N	\N
+146	7..	Anthropogenic material	\N	Material known to have artificial (human-related) origin; insufficient information to classify in more detail.	this vocabulary	\N	anthropogenic_material	urn:cgi:classifier:CGI:SimpleLithology:200811:anthropogenic_material	anthropogenic	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+\.
+
+
+--
+-- TOC entry 2882 (class 0 OID 20289)
+-- Dependencies: 2502
+-- Data for Name: termvaluelookup; Type: TABLE DATA; Schema: usgin; Owner: postgres
+--
+
+COPY termvaluelookup (objectid, lookupterm, cgiurn, cgicodespace, cginame) FROM stdin;
+1	Cambrian	urn:cgi:classifier:ICS:StratChart:2008:Cambrian	urn:cgi:classifierScheme:ICS:StratChart:2008	Cambrian
+2	Cretaceous	urn:cgi:classifier:ICS:StratChart:2008:Cretaceous	urn:cgi:classifierScheme:ICS:StratChart:2008	Cretaceous
+3	Early Cretaceous	urn:cgi:classifier:ICS:StratChart:2008:LowerCretaceous	urn:cgi:classifierScheme:ICS:StratChart:2008	LowerCretaceous
+4	Early Jurassic	urn:cgi:classifier:ICS:StratChart:2008:LowerJurassic	urn:cgi:classifierScheme:ICS:StratChart:2008	LowerJurassic
+5	Early Pleistocene	urn:cgi:classifier:ICS:StratChart:2008:Pleistocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Pleistocene
+6	Early Proterozoic	urn:cgi:classifier:ICS:StratChart:2008:Neoproterozoic	urn:cgi:classifierScheme:ICS:StratChart:2008	Neoproterozoic
+7	Early Tertiary	urn:cgi:classifier:ICS:StratChart:2008:Neogene	urn:cgi:classifierScheme:ICS:StratChart:2008	Neogene
+8	Early Triassic	urn:cgi:classifier:ICS:StratChart:2008:LowerTriassic	urn:cgi:classifierScheme:ICS:StratChart:2008	LowerTriassic
+9	Holocene	urn:cgi:classifier:ICS:StratChart:2008:Holocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Holocene
+10	Jurassic	urn:cgi:classifier:ICS:StratChart:2008:Jurassic	urn:cgi:classifierScheme:ICS:StratChart:2008	Jurassic
+11	Late Cretaceous	urn:cgi:classifier:ICS:StratChart:2008:UpperCretaceous	urn:cgi:classifierScheme:ICS:StratChart:2008	UpperCretaceous
+12	Late Jurassic	urn:cgi:classifier:ICS:StratChart:2008:UpperJurassic	urn:cgi:classifierScheme:ICS:StratChart:2008	UpperJurassic
+13	Late Miocene	urn:cgi:classifier:ICS:StratChart:2008:Miocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Miocene
+14	Early Pleistocene	urn:cgi:classifier:ICS:StratChart:2008:Pleistocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Pleistocene
+15	Late Triassic	urn:cgi:classifier:ICS:StratChart:2008:UpperTriassic	urn:cgi:classifierScheme:ICS:StratChart:2008	UpperTriassic
+16	Latest Pliocene	urn:cgi:classifier:ICS:StratChart:2008:Pliocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Pliocene
+17	Cretaceous	urn:cgi:classifier:ICS:StratChart:2008:Cretaceous	urn:cgi:classifierScheme:ICS:StratChart:2008	Cretaceous
+18	Middle Jurassic	urn:cgi:classifier:ICS:StratChart:2008:MiddleJurassic	urn:cgi:classifierScheme:ICS:StratChart:2008	MiddleJurassic
+19	Late Miocene	urn:cgi:classifier:ICS:StratChart:2008:Miocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Miocene
+20	Early Pleistocene	urn:cgi:classifier:ICS:StratChart:2008:Pleistocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Pleistocene
+21	Latest Pliocene	urn:cgi:classifier:ICS:StratChart:2008:Pliocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Pliocene
+22	Middle Proterozoic	urn:cgi:classifier:ICS:StratChart:2008:Mesoproterozoic	urn:cgi:classifierScheme:ICS:StratChart:2008	Mesoproterozoic
+23	Middle Triassic	urn:cgi:classifier:ICS:StratChart:2008:MiddleTriassic	urn:cgi:classifierScheme:ICS:StratChart:2008	MiddleTriassic
+24	Mississippian	urn:cgi:classifier:ICS:StratChart:2008:Mississippian	urn:cgi:classifierScheme:ICS:StratChart:2008	Mississippian
+25	Oligocene	urn:cgi:classifier:ICS:StratChart:2008:Oligocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Oligocene
+26	Paleocene	urn:cgi:classifier:ICS:StratChart:2008:Paleocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Paleocene
+27	Paleozoic	urn:cgi:classifier:ICS:StratChart:2008:Paleozoic	urn:cgi:classifierScheme:ICS:StratChart:2008	Paleozoic
+28	Pennsylvanian	urn:cgi:classifier:ICS:StratChart:2008:Pennsylvanian	urn:cgi:classifierScheme:ICS:StratChart:2008	Pennsylvanian
+29	Permian	urn:cgi:classifier:ICS:StratChart:2008:Permian	urn:cgi:classifierScheme:ICS:StratChart:2008	Permian
+30	Latest Pliocene	urn:cgi:classifier:ICS:StratChart:2008:Pliocene	urn:cgi:classifierScheme:ICS:StratChart:2008	Pliocene
+31	Quaternary	urn:cgi:classifier:ICS:StratChart:2008:Quaternary	urn:cgi:classifierScheme:ICS:StratChart:2008	Quaternary
+32	Tertiary	urn:cgi:classifier:ICS:StratChart:2008:Cenozoic	urn:cgi:classifierScheme:ICS:StratChart:2008	Cenozoic
+\.
+
+
+--
+-- TOC entry 2872 (class 2606 OID 20297)
+-- Dependencies: 2496 2496
+-- Name: controlledconceptlookup_pkey; Type: CONSTRAINT; Schema: usgin; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY controlledconceptlookup
+    ADD CONSTRAINT controlledconceptlookup_pkey PRIMARY KEY (objectid);
+
+
+--
+-- TOC entry 2874 (class 2606 OID 20299)
+-- Dependencies: 2498 2498
+-- Name: icstimescale_pkey; Type: CONSTRAINT; Schema: usgin; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY icstimescale
+    ADD CONSTRAINT icstimescale_pkey PRIMARY KEY (objectid);
+
+
+--
+-- TOC entry 2876 (class 2606 OID 20301)
+-- Dependencies: 2500 2500
+-- Name: simplelithology200811_pkey; Type: CONSTRAINT; Schema: usgin; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY simplelithology200811
+    ADD CONSTRAINT simplelithology200811_pkey PRIMARY KEY (objectid);
+
+
+--
+-- TOC entry 2878 (class 2606 OID 20303)
+-- Dependencies: 2502 2502
+-- Name: termvaluelookup_pkey; Type: CONSTRAINT; Schema: usgin; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY termvaluelookup
+    ADD CONSTRAINT termvaluelookup_pkey PRIMARY KEY (objectid);
+
+
+-- Completed on 2011-05-18 15:31:00 MST
+
+--
+-- PostgreSQL database dump complete
+--
+
