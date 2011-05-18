@@ -1,0 +1,45 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 9.0.2
+-- Dumped by pg_dump version 9.0.1
+-- Started on 2011-05-18 15:24:08 MST
+
+SET statement_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = off;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET escape_string_warning = off;
+
+--
+-- TOC entry 8 (class 2615 OID 62374)
+-- Name: gsmltv; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+CREATE SCHEMA gsmltv;
+
+
+ALTER SCHEMA gsmltv OWNER TO postgres;
+
+SET search_path = gsmltv, pg_catalog;
+
+--
+-- TOC entry 2564 (class 1259 OID 62406)
+-- Dependencies: 2656 1093 8
+-- Name: geologicunitview; Type: VIEW; Schema: gsmltv; Owner: postgres
+--
+
+CREATE VIEW geologicunitview AS
+    SELECT polys.mapunitpolys_id AS featureuri, dmu.name, dmu.fullname, dmu.label, 'urn:ogc:def:nil:OGC:missing'::character varying AS parenturi, dmu.description, dmu.areafillrgb AS symbol, dmu.descriptionofmapunits_id AS specificationuri, 'urn:cgi:classifier:CGI:GeologicUnitType:200811:lithostratigraphic_unit'::character varying AS geologicunittype, preferredage.agedisplay AS geologichistory, CASE (preferredage.agedisplayurn IS NULL) WHEN true THEN preferredage.youngerurn ELSE preferredage.agedisplayurn END AS representativeageuri, preferredage.youngerurn AS youngerageuri, preferredage.olderurn AS olderageuri, dmu.hierarchykey AS rank, dmuext.lithology_summary AS lithology, ccl.cgiurn AS representativelithologyuri, 'urn:ogc:def:nil:OGC:missing'::character varying AS observationmethod, polys.datasourceid AS sourceuri, polys.datasourceid AS metadatauri, polys.shape FROM (((((public.ncgmp_mapunitpolys polys JOIN public.ncgmp_descriptionofmapunits dmu ON (((polys.mapunit)::text = (dmu.mapunit)::text))) JOIN public.ncgmp_datasources ds ON (((polys.datasourceid)::text = (ds.datasources_id)::text))) JOIN usgin.geologicevent preferredage ON (((dmu.descriptionofmapunits_id)::text = (preferredage.preferredage_dmu_id)::text))) LEFT JOIN public.ncgmp_ex_dmuextension dmuext ON (((dmu.mapunit)::text = (dmuext.mapunit)::text))) LEFT JOIN usgin.controlledconceptlookup ccl ON ((dmuext.representative_lithology = (ccl.lookupterm)::text)));
+
+
+ALTER TABLE gsmltv.geologicunitview OWNER TO postgres;
+
+-- Completed on 2011-05-18 15:24:08 MST
+
+--
+-- PostgreSQL database dump complete
+--
+
