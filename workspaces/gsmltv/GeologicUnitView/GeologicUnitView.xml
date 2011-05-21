@@ -205,6 +205,13 @@
 						<OCQL>metadatauri</OCQL>
 					</sourceExpression>
 				</AttributeMapping>
+				<!--SHAPE-->	
+				<AttributeMapping>
+					<targetAttribute>gsmltv:shape</targetAttribute>
+					<sourceExpression>
+						<OCQL>shape</OCQL>
+					</sourceExpression>
+				</AttributeMapping>
 			</attributeMappings>
 		</FeatureTypeMapping>
 	</typeMappings>
