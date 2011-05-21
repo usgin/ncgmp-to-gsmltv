@@ -68,7 +68,7 @@
 				<AttributeMapping>
 					<targetAttribute>gsmltv:GeologicUnitView</targetAttribute>
 					<idExpression>
-						<OCQL>getId()</OCQL>
+						<OCQL>id</OCQL>
 					</idExpression>
 				</AttributeMapping>
 				<!--FEATURE URI-->	
